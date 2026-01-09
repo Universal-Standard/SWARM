@@ -11,7 +11,8 @@ This repository supports **16 specialized branches** organized into **4 platform
 - **⚡ Azure Group**: `azure-main`, `azure-development`, `azure-features`, `azure-staging`
 - **☁️ AWS Group**: `aws-main`, `aws-development`, `aws-features`, `aws-staging`
 
-**👉 See [MULTI_PLATFORM_BRANCHES.md](MULTI_PLATFORM_BRANCHES.md) for complete branch strategy and platform selection guide.**
+**📋 [Branch Index](BRANCHES.md)** - Complete list of all branches with status and documentation  
+**📖 [Branch Strategy Guide](MULTI_PLATFORM_BRANCHES.md)** - Platform selection and workflow guide
 
 ---
 

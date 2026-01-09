@@ -2,6 +2,10 @@
 
 This repository uses a multi-platform branch strategy to support deployment across four major cloud platforms. Each platform has four dedicated branches for different stages of development.
 
+**📋 Quick Reference**: See [BRANCHES.md](BRANCHES.md) for a complete index of all 16 branches with their current status.
+
+---
+
 ## Branch Groups
 
 ### 🐙 Group 1: GitHub-Centric
