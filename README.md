@@ -2,17 +2,51 @@
 
 **Multi-Platform AI Workflow Orchestration** - Build, execute, and monitor multi-agent AI workflows with visual drag-and-drop interface across GitHub, Cloudflare, Azure, and AWS.
 
-## 🌐 Multi-Platform Branches
+## 🌐 Multi-Platform Deployment
 
-This repository supports **16 specialized branches** organized into **4 platform groups**:
+SWARM is designed for deployment across multiple cloud platforms, each with dedicated branches for different environments.
 
-- **🐙 GitHub Group**: `github-main`, `github-development`, `github-features`, `github-staging`
-- **☁️ Cloudflare Group**: `cloudflare-main`, `cloudflare-development`, `cloudflare-features`, `cloudflare-staging`  
-- **⚡ Azure Group**: `azure-main`, `azure-development`, `azure-features`, `azure-staging`
-- **☁️ AWS Group**: `aws-main`, `aws-development`, `aws-features`, `aws-staging`
+### 🏭 Production Branches (Main)
+Access production-ready deployments for each platform:
 
-**📋 [Branch Index](BRANCHES.md)** - Complete list of all branches with status and documentation  
-**📖 [Branch Strategy Guide](MULTI_PLATFORM_BRANCHES.md)** - Platform selection and workflow guide
+- [**GitHub Pages**](https://github.com/Universal-Standard/SWARM/tree/github-main) - Static hosting with GitHub Actions
+- [**Cloudflare**](https://github.com/Universal-Standard/SWARM/tree/cloudflare-main) - Edge computing with Workers
+- [**Azure**](https://github.com/Universal-Standard/SWARM/tree/azure-main) - Static Web Apps with Functions
+- [**AWS**](https://github.com/Universal-Standard/SWARM/tree/aws-main) - S3 + CloudFront + Lambda
+
+### 📋 All Environment Branches
+
+**GitHub Platform:**
+- [github-main](https://github.com/Universal-Standard/SWARM/tree/github-main) (Production)
+- [github-staging](https://github.com/Universal-Standard/SWARM/tree/github-staging) (Pre-Production)
+- [github-development](https://github.com/Universal-Standard/SWARM/tree/github-development) (Development)
+- [github-features](https://github.com/Universal-Standard/SWARM/tree/github-features) (Feature Integration)
+
+**Cloudflare Platform:**
+- [cloudflare-main](https://github.com/Universal-Standard/SWARM/tree/cloudflare-main) (Production)
+- [cloudflare-staging](https://github.com/Universal-Standard/SWARM/tree/cloudflare-staging) (Pre-Production)
+- [cloudflare-development](https://github.com/Universal-Standard/SWARM/tree/cloudflare-development) (Development)
+- [cloudflare-features](https://github.com/Universal-Standard/SWARM/tree/cloudflare-features) (Feature Integration)
+
+**Azure Platform:**
+- [azure-main](https://github.com/Universal-Standard/SWARM/tree/azure-main) (Production)
+- [azure-staging](https://github.com/Universal-Standard/SWARM/tree/azure-staging) (Pre-Production)
+- [azure-development](https://github.com/Universal-Standard/SWARM/tree/azure-development) (Development)
+- [azure-features](https://github.com/Universal-Standard/SWARM/tree/azure-features) (Feature Integration)
+
+**AWS Platform:**
+- [aws-main](https://github.com/Universal-Standard/SWARM/tree/aws-main) (Production)
+- [aws-staging](https://github.com/Universal-Standard/SWARM/tree/aws-staging) (Pre-Production)
+- [aws-development](https://github.com/Universal-Standard/SWARM/tree/aws-development) (Development)
+- [aws-features](https://github.com/Universal-Standard/SWARM/tree/aws-features) (Feature Integration)
+
+### 🚀 Platform Selection Guide
+**[View All Branches →](https://github.com/Universal-Standard/SWARM/branches)**
+
+For platform-specific deployment instructions:
+- [Platform Selection Guide](MULTI_PLATFORM_BRANCHES.md)
+- [Complete Branch Index](BRANCHES.md)
+- [Deployment Documentation](docs/deployment/)
 
 ---
 
@@ -26,8 +60,8 @@ This repository supports **16 specialized branches** organized into **4 platform
 
 ```bash
 # Clone repository
-git clone https://github.com/UniversalStandards/PROJECT-SWARM.git
-cd PROJECT-SWARM
+git clone https://github.com/Universal-Standard/SWARM.git
+cd SWARM
 
 # Install dependencies
 npm install
@@ -106,8 +140,8 @@ PROJECT-SWARM can be deployed on multiple platforms simultaneously:
 |----------|------|-------------|------|----------|
 | **Cloudflare Pages + Workers** | Full-Stack | ✅ | $0-20/mo | Production (global CDN) |
 | **GitHub Pages** | Frontend | ✅ | $0 | Staging/Demo |
-| **Windows Server 2025** | Full-Stack | Manual | $50-200/mo | Corporate/Internal |
-| **Amazon Linux (EC2)** | Full-Stack | Script | $10-50/mo | Cloud/Backup |
+| **Azure Static Web Apps** | Full-Stack | ✅ | $0-50/mo | Enterprise/Microsoft shops |
+| **AWS S3 + Lambda** | Full-Stack | Manual | $10-100/mo | AWS-native environments |
 
 ### Recommended: Cloudflare Pages + Workers
 
@@ -121,7 +155,8 @@ PROJECT-SWARM can be deployed on multiple platforms simultaneously:
 **Setup:**
 ```bash
 # 1. Frontend (Pages) - Auto-deploys on git push
-git push origin main
+git checkout cloudflare-main
+git push origin cloudflare-main
 
 # 2. Backend (Workers) - Deploy with Wrangler
 npm install -g wrangler
@@ -248,10 +283,10 @@ MIT License - see [LICENSE](./LICENSE) for details.
 
 ## 🔗 Links
 
-- **Repository**: https://github.com/UniversalStandards/PROJECT-SWARM
-- **Documentation**: See links above
-- **Issues**: https://github.com/UniversalStandards/PROJECT-SWARM/issues
-- **Discussions**: https://github.com/UniversalStandards/PROJECT-SWARM/discussions
+- **Repository**: https://github.com/Universal-Standard/SWARM
+- **All Branches**: https://github.com/Universal-Standard/SWARM/branches
+- **Issues**: https://github.com/Universal-Standard/SWARM/issues
+- **Discussions**: https://github.com/Universal-Standard/SWARM/discussions
 
 ---
 
@@ -270,4 +305,4 @@ Built with:
 
 Start with: `npm install && npm run dev`
 
-Deploy to: [Cloudflare](./docs/deployment/CLOUDFLARE_DEPLOYMENT.md) | [GitHub Pages](./docs/deployment/GITHUB_PAGES_DEPLOYMENT.md) | [Self-Hosted](./docs/deployment/SELF_HOSTED_DEPLOYMENT.md)
+Deploy to: [Cloudflare](./docs/deployment/CLOUDFLARE_DEPLOYMENT.md) | [GitHub Pages](./docs/deployment/GITHUB_PAGES_DEPLOYMENT.md) | [Azure](./docs/deployment/AZURE_DEPLOYMENT.md) | [AWS](./docs/deployment/AWS_DEPLOYMENT.md)
