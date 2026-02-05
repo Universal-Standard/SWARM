@@ -3,6 +3,7 @@ import { db } from "../db";
 import { workflowWebhooks, executions, workflows, type WorkflowWebhook, type InsertWorkflowWebhook } from "@shared/schema";
 import { eq } from "drizzle-orm";
 import { orchestrator } from "../ai/orchestrator";
+import { logger } from "./logger";
 
 interface WebhookCallLog {
   timestamp: Date;
@@ -239,7 +240,7 @@ export class WebhookManager {
 
       // Queue workflow execution (async)
       orchestrator.executeWorkflow(workflowId, payload).catch(error => {
-        console.error(`[Webhook] Error executing workflow ${workflowId}:`, error);
+        logger.error(`[Webhook] Error executing workflow ${workflowId}`, error instanceof Error ? error : new Error(String(error)));
       });
 
       // Update webhook statistics
@@ -258,7 +259,7 @@ export class WebhookManager {
       return { success: true, executionId: execution.id };
     } catch (error) {
       const errorMessage = error instanceof Error ? error.message : "Unknown error";
-      console.error(`[Webhook] Error triggering webhook:`, error);
+      logger.error(`[Webhook] Error triggering webhook`, error instanceof Error ? error : new Error(String(error)));
       return { success: false, error: errorMessage };
     }
   }

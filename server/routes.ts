@@ -19,6 +19,7 @@ import {
 import { withGitHubAuth, type GitHubAuthRequest } from "./middleware/github-auth";
 import { encrypt, decrypt, maskToken } from "./auth/encryption";
 import { WorkflowValidationError } from "@shared/errors";
+import { logger } from "./lib/logger";
 
 // Execution request schema - only workflowId and input are needed from client
 const executeWorkflowSchema = insertExecutionSchema.pick({ workflowId: true, input: true });
@@ -81,7 +82,7 @@ export async function registerRoutes(app: Express) {
       const user = await storage.getUser(userId);
       res.json(user);
     } catch (error) {
-      console.error("Error fetching user:", error);
+      logger.error("Error fetching user", error instanceof Error ? error : new Error(String(error)));
       res.status(500).json({ message: "Failed to fetch user" });
     }
   });
@@ -133,7 +134,7 @@ export async function registerRoutes(app: Express) {
       // Redirect to settings page
       res.redirect('/app/settings?github=connected');
     } catch (error: any) {
-      console.error('GitHub OAuth callback error:', error);
+      logger.error('GitHub OAuth callback error', error instanceof Error ? error : new Error(String(error)));
       res.redirect('/app/settings?github=error');
     }
   });
@@ -1124,7 +1125,7 @@ Be concise, practical, and provide actionable guidance. When relevant, suggest s
       
       res.json(updatedChat);
     } catch (error: any) {
-      console.error('Assistant chat error:', error);
+      logger.error('Assistant chat error', error instanceof Error ? error : new Error(String(error)));
       
       // Handle OpenAI quota/rate limit errors gracefully
       if (error.status === 429 || error.message?.includes('quota')) {

@@ -3,6 +3,7 @@ import { db } from "../db";
 import { workflowSchedules, executions, workflows, type WorkflowSchedule, type InsertWorkflowSchedule } from "@shared/schema";
 import { eq, and } from "drizzle-orm";
 import { orchestrator } from "../ai/orchestrator";
+import { logger } from "./logger";
 
 interface ScheduleJob {
   scheduleId: string;
@@ -19,7 +20,7 @@ export class WorkflowScheduler {
   async initialize(): Promise<void> {
     if (this.initialized) return;
 
-    console.log("[Scheduler] Initializing workflow scheduler...");
+    logger.info("[Scheduler] Initializing workflow scheduler...");
 
     const schedules = await db.query.workflowSchedules.findMany({
       where: eq(workflowSchedules.enabled, true),
@@ -28,14 +29,14 @@ export class WorkflowScheduler {
     for (const schedule of schedules) {
       try {
         await this.scheduleWorkflow(schedule);
-        console.log(`[Scheduler] Scheduled workflow ${schedule.workflowId} with cron: ${schedule.cronExpression}`);
+        logger.info(`[Scheduler] Scheduled workflow ${schedule.workflowId} with cron: ${schedule.cronExpression}`);
       } catch (error) {
-        console.error(`[Scheduler] Error scheduling workflow ${schedule.workflowId}:`, error);
+        logger.error(`[Scheduler] Error scheduling workflow ${schedule.workflowId}`, error instanceof Error ? error : new Error(String(error)));
       }
     }
 
     this.initialized = true;
-    console.log(`[Scheduler] Initialized with ${this.jobs.size} active schedules`);
+    logger.info(`[Scheduler] Initialized with ${this.jobs.size} active schedules`);
   }
 
   /**
@@ -135,7 +136,7 @@ export class WorkflowScheduler {
     const task = cron.schedule(
       schedule.cronExpression,
       async () => {
-        console.log(`[Scheduler] Executing scheduled workflow ${schedule.workflowId}`);
+        logger.info(`[Scheduler] Executing scheduled workflow ${schedule.workflowId}`);
         await this.executeScheduledWorkflow(schedule);
       }
     );
@@ -154,7 +155,7 @@ export class WorkflowScheduler {
     if (job) {
       job.cronTask.stop();
       this.jobs.delete(scheduleId);
-      console.log(`[Scheduler] Unscheduled workflow schedule ${scheduleId}`);
+      logger.info(`[Scheduler] Unscheduled workflow schedule ${scheduleId}`);
     }
   }
 
@@ -169,7 +170,7 @@ export class WorkflowScheduler {
       });
 
       if (!workflow) {
-        console.error(`[Scheduler] Workflow ${schedule.workflowId} not found`);
+        logger.error(`[Scheduler] Workflow ${schedule.workflowId} not found`);
         return;
       }
 
@@ -198,9 +199,9 @@ export class WorkflowScheduler {
           })
           .where(eq(workflowSchedules.id, schedule.id));
 
-        console.log(`[Scheduler] Successfully executed workflow ${schedule.workflowId}`);
+        logger.info(`[Scheduler] Successfully executed workflow ${schedule.workflowId}`);
       } catch (error) {
-        console.error(`[Scheduler] Error executing workflow ${schedule.workflowId}:`, error);
+        logger.error(`[Scheduler] Error executing workflow ${schedule.workflowId}`, error instanceof Error ? error : new Error(String(error)));
         
         // Update execution with error
         await db
@@ -213,7 +214,7 @@ export class WorkflowScheduler {
           .where(eq(executions.id, execution.id));
       }
     } catch (error) {
-      console.error(`[Scheduler] Error in scheduled workflow execution:`, error);
+      logger.error(`[Scheduler] Error in scheduled workflow execution`, error instanceof Error ? error : new Error(String(error)));
     }
   }
 
@@ -270,13 +271,13 @@ export class WorkflowScheduler {
    * Shutdown scheduler and stop all jobs
    */
   shutdown(): void {
-    console.log("[Scheduler] Shutting down scheduler...");
+    logger.info("[Scheduler] Shutting down scheduler...");
     for (const [scheduleId, job] of this.jobs.entries()) {
       job.cronTask.stop();
     }
     this.jobs.clear();
     this.initialized = false;
-    console.log("[Scheduler] Scheduler shut down");
+    logger.info("[Scheduler] Scheduler shut down");
   }
 }
 

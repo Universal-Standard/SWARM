@@ -2,6 +2,7 @@ import { WebSocketServer, WebSocket } from 'ws';
 import type { Server } from 'http';
 import type { IncomingMessage } from 'http';
 import url from 'url';
+import { logger } from './lib/logger';
 
 export interface ExecutionEvent {
   type: 'execution_started' | 'agent_started' | 'agent_completed' | 'execution_completed' | 'execution_failed' | 'log' | 'message';
@@ -32,7 +33,7 @@ class WebSocketManager {
       this.handleConnection(ws, req);
     });
 
-    console.log('[WebSocket] Server initialized on /ws');
+    logger.info('[WebSocket] Server initialized on /ws');
   }
 
   private handleConnection(ws: WebSocket, req: IncomingMessage) {
@@ -52,7 +53,7 @@ class WebSocketManager {
     existingClients.push(connection);
     this.clients.set(executionId, existingClients);
 
-    console.log(`[WebSocket] Client connected to execution ${executionId}`);
+    logger.info(`[WebSocket] Client connected to execution ${executionId}`);
 
     // Send connection acknowledgment
     this.sendToClient(ws, {
@@ -69,17 +70,17 @@ class WebSocketManager {
 
     // Handle errors
     ws.on('error', (error) => {
-      console.error('[WebSocket] Error:', error);
+      logger.error('[WebSocket] Error', error instanceof Error ? error : new Error(String(error)));
     });
 
     // Handle incoming messages (for future use like pause/resume)
     ws.on('message', (data) => {
       try {
         const message = JSON.parse(data.toString());
-        console.log('[WebSocket] Received message:', message);
+        logger.debug('[WebSocket] Received message', { message });
         // Handle incoming messages if needed
       } catch (error) {
-        console.error('[WebSocket] Failed to parse message:', error);
+        logger.error('[WebSocket] Failed to parse message', error instanceof Error ? error : new Error(String(error)));
       }
     });
   }
@@ -94,7 +95,7 @@ class WebSocketManager {
       this.clients.set(executionId, updatedClients);
     }
 
-    console.log(`[WebSocket] Client disconnected from execution ${executionId}`);
+    logger.info(`[WebSocket] Client disconnected from execution ${executionId}`);
   }
 
   private sendToClient(ws: WebSocket, event: ExecutionEvent) {
@@ -115,7 +116,7 @@ class WebSocketManager {
       timestamp: new Date().toISOString(),
     };
 
-    console.log(`[WebSocket] Broadcasting to ${clients.length} clients:`, fullEvent.type);
+    logger.debug(`[WebSocket] Broadcasting to ${clients.length} clients`, { type: fullEvent.type });
 
     clients.forEach(client => {
       this.sendToClient(client.ws, fullEvent);

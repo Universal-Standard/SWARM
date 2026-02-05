@@ -1,6 +1,7 @@
 import type { Request, Response, NextFunction } from "express";
 import { getOctokitForUser, isGitHubTokenExpired } from "../auth/github-oauth";
 import { storage } from "../storage";
+import { logger } from "../lib/logger";
 
 export interface GitHubAuthRequest extends Request {
   octokit?: ReturnType<typeof getOctokitForUser>;
@@ -71,7 +72,7 @@ export async function withGitHubAuth(
     req.octokit = octokit;
     next();
   } catch (error) {
-    console.error("GitHub auth middleware error:", error);
+    logger.error("GitHub auth middleware error", error instanceof Error ? error : new Error(String(error)));
     res.status(500).json({ 
       error: "Internal server error",
       message: "Failed to authenticate with GitHub" 

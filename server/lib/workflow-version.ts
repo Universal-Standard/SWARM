@@ -1,6 +1,7 @@
 import { db } from "../db";
 import { workflowVersions, workflows, agents, type WorkflowVersion, type InsertWorkflowVersion } from "@shared/schema";
 import { eq, desc, and } from "drizzle-orm";
+import { logger } from "./logger";
 
 interface WorkflowData {
   nodes: any[];
@@ -234,7 +235,7 @@ export class WorkflowVersionManager {
   async tagVersion(versionId: string, tag: string): Promise<void> {
     // Tags are not yet supported in the schema
     // Store tag information in the commitMessage or as part of metadata if needed
-    console.log(`[VersionManager] Tag requested: ${tag} for version ${versionId}`);
+    logger.info(`[VersionManager] Tag requested: ${tag} for version ${versionId}`);
   }
 
   /**
@@ -247,7 +248,7 @@ export class WorkflowVersionManager {
   ): Promise<void> {
     // Version statistics tracking is not yet implemented
     // This can be added to the schema in a future phase
-    console.log(`[VersionManager] Execution stats: workflow=${workflowId}, success=${success}, duration=${duration}ms`);
+    logger.info(`[VersionManager] Execution stats`, { workflowId, success, duration });
   }
 
   /**

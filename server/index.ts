@@ -1,10 +1,11 @@
 import express, { type Request, Response, NextFunction } from "express";
 import { registerRoutes } from "./routes";
-import { setupVite, serveStatic, log } from "./vite";
+import { setupVite, serveStatic } from "./vite";
 import { scheduler as basicScheduler } from "./scheduler";
 import { errorHandler } from "./middleware/error-handler";
 import { wsManager } from "./websocket";
 import { createServer } from "http";
+import { logger } from "./lib/logger";
 
 /**
  * Validate required environment variables on startup
@@ -28,6 +29,10 @@ function validateEnvironment() {
   }
   
   log('✓ Environment validation passed');
+}
+
+function log(message: string) {
+  logger.info(message);
 }
 
 const app = express();
@@ -139,7 +144,7 @@ app.use((req, res, next) => {
       log(`✓ Environment: ${process.env.NODE_ENV || 'development'}`);
     });
   } catch (error) {
-    console.error('❌ Failed to start server:', error);
+    logger.error('Failed to start server', error instanceof Error ? error : new Error(String(error)));
     process.exit(1);
   }
 })();

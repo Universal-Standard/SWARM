@@ -1,6 +1,7 @@
 import { db } from "../db";
 import { executionCosts, providerPricing, executions, agents, type ExecutionCost, type ProviderPricing } from "@shared/schema";
 import { eq, and, gte, lte, sql, desc } from "drizzle-orm";
+import { logger } from "./logger";
 
 interface TokenUsage {
   inputTokens: number;
@@ -54,7 +55,7 @@ export class CostTracker {
       }
     }
 
-    console.log("[CostTracker] Initialized provider pricing");
+    logger.info("[CostTracker] Initialized provider pricing");
   }
 
   /**

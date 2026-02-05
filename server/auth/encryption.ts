@@ -1,4 +1,5 @@
 import crypto from 'crypto';
+import { logger } from '../lib/logger';
 
 const ALGORITHM = 'aes-256-gcm';
 const KEY_LENGTH = 32;
@@ -26,12 +27,12 @@ function getEncryptionKey(): Buffer {
   
   // Development-only fallback with clear warnings
   if (!salt) {
-    console.warn('⚠️  WARNING: ENCRYPTION_SALT not set. Using insecure default for DEVELOPMENT ONLY!');
+    logger.warn('⚠️  WARNING: ENCRYPTION_SALT not set. Using insecure default for DEVELOPMENT ONLY!');
   }
   const effectiveSalt = salt || 'dev-only-salt-not-for-production';
   
   if (!key) {
-    console.warn('⚠️  WARNING: ENCRYPTION_KEY not set. Using insecure default for DEVELOPMENT ONLY!');
+    logger.warn('⚠️  WARNING: ENCRYPTION_KEY not set. Using insecure default for DEVELOPMENT ONLY!');
     return crypto.scryptSync('dev-only-key-not-for-production', effectiveSalt, KEY_LENGTH);
   }
   

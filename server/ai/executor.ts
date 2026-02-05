@@ -3,6 +3,7 @@ import Anthropic from '@anthropic-ai/sdk';
 import { GoogleGenAI } from '@google/genai';
 import type { Agent, KnowledgeEntry } from '@shared/schema';
 import { fallbackManager } from './providers/fallback-manager';
+import { logger } from '../lib/logger';
 
 interface ExecutionContext {
   agentId: string;
@@ -101,7 +102,7 @@ export class AIExecutor {
         throw error;
       }
 
-      console.log(`[Executor] Primary provider ${agent.provider} failed, attempting fallback...`);
+      logger.info(`[Executor] Primary provider ${agent.provider} failed, attempting fallback...`);
     }
 
     // Try fallback providers
@@ -120,7 +121,7 @@ export class AIExecutor {
           model: fallbackManager.getModelForProvider(nextProvider, agent.model),
         };
 
-        console.log(`[Executor] Trying fallback provider: ${nextProvider} with model ${fallbackAgent.model}`);
+        logger.info(`[Executor] Trying fallback provider: ${nextProvider} with model ${fallbackAgent.model}`);
         
         const result = await this.executeSingleProvider(fallbackAgent, context);
         
@@ -139,7 +140,7 @@ export class AIExecutor {
         failedProviders.add(nextProvider);
         fallbackManager.recordFailure(nextProvider, error.message);
         fallbackManager.logFallbackEvent(agent.provider, nextProvider, error.message, false);
-        console.log(`[Executor] Fallback provider ${nextProvider} also failed:`, error.message);
+        logger.info(`[Executor] Fallback provider ${nextProvider} also failed`, { message: error.message });
       }
     }
 

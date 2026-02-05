@@ -1,5 +1,5 @@
 import { Node, Edge } from '@xyflow/react';
-import ELK from 'elkjs/lib/elk.bundled.js';
+import ELK from 'elkjs';
 
 // Default node dimensions
 const DEFAULT_NODE_WIDTH = 280;

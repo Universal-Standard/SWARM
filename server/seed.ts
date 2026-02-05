@@ -1,7 +1,8 @@
 import { storage } from './storage';
+import { logger } from './lib/logger';
 
 async function seed() {
-  console.log('Seeding database...');
+  logger.info('Seeding database...');
 
   // Create a mock user for templates
   const user = await storage.createUser({
@@ -11,7 +12,7 @@ async function seed() {
     avatarUrl: null,
   });
 
-  console.log('Created template user:', user.id);
+  logger.info('Created template user', { userId: user.id });
 
   // Create executable template workflows
   const templates = [
@@ -269,7 +270,7 @@ Provide specific, implementable SEO recommendations.`,
       category: templateData.category,
     });
 
-    console.log('Created workflow:', workflow.id);
+    logger.info('Created workflow', { workflowId: workflow.id });
 
     // Create agents for workflow
     for (const node of templateData.nodes) {
@@ -299,15 +300,15 @@ Provide specific, implementable SEO recommendations.`,
       featured: true,
     });
 
-    console.log(`Created template: ${templateData.name}`);
+    logger.info(`Created template: ${templateData.name}`);
   }
 
-  console.log('\n✅ Seeding complete! Created 3 executable workflow templates.');
-  console.log('Run these templates by creating a workflow from them and executing with appropriate input.');
+  logger.info('✅ Seeding complete! Created 3 executable workflow templates.');
+  logger.info('Run these templates by creating a workflow from them and executing with appropriate input.');
   process.exit(0);
 }
 
 seed().catch((error) => {
-  console.error('Seeding failed:', error);
+  logger.error('Seeding failed', error instanceof Error ? error : new Error(String(error)));
   process.exit(1);
 });

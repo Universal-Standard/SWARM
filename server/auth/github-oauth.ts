@@ -2,6 +2,7 @@ import { Octokit } from "@octokit/rest";
 import { encrypt, decrypt } from "./encryption";
 import { storage } from "../storage";
 import type { User } from "@shared/schema";
+import { logger } from "../lib/logger";
 
 /**
  * GitHub OAuth configuration
@@ -24,7 +25,7 @@ function validateGitHubConfig() {
   
   // Warn about localhost in production
   if (process.env.NODE_ENV === 'production' && GITHUB_REDIRECT_URI.includes('localhost')) {
-    console.warn('⚠️  WARNING: GitHub OAuth redirect URI contains localhost in production. This will not work!');
+    logger.warn('⚠️  WARNING: GitHub OAuth redirect URI contains localhost in production. This will not work!');
   }
 }
 
@@ -125,7 +126,7 @@ export function getGitHubToken(user: User): string | null {
   try {
     return decrypt(user.githubAccessToken);
   } catch (error) {
-    console.error('Error decrypting GitHub token:', error);
+    logger.error('Error decrypting GitHub token', error instanceof Error ? error : new Error(String(error)));
     return null;
   }
 }

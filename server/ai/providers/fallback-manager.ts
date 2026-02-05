@@ -1,4 +1,5 @@
 import type { Agent } from "@shared/schema";
+import { logger } from "../../lib/logger";
 
 interface FallbackConfig {
   primaryProvider: string;
@@ -186,7 +187,7 @@ export class FallbackManager {
     // Open circuit breaker if threshold exceeded
     if (health.consecutiveFailures >= this.CIRCUIT_BREAKER_THRESHOLD) {
       health.isCircuitOpen = true;
-      console.warn(
+      logger.warn(
         `[Fallback] Circuit breaker opened for ${provider} after ${health.consecutiveFailures} consecutive failures`
       );
     }
@@ -206,7 +207,7 @@ export class FallbackManager {
     // Close circuit breaker if it was open
     if (health.isCircuitOpen) {
       health.isCircuitOpen = false;
-      console.log(`[Fallback] Circuit breaker closed for ${provider}`);
+      logger.info(`[Fallback] Circuit breaker closed for ${provider}`);
     }
 
     this.providerHealth.set(provider, health);
@@ -236,7 +237,7 @@ export class FallbackManager {
     health.isCircuitOpen = false;
     health.consecutiveFailures = 0;
     this.providerHealth.set(provider, health);
-    console.log(`[Fallback] Circuit breaker reset for ${provider}`);
+    logger.info(`[Fallback] Circuit breaker reset for ${provider}`);
   }
 
   /**
@@ -263,7 +264,7 @@ export class FallbackManager {
       this.fallbackEvents.splice(100);
     }
 
-    console.log(
+    logger.info(
       `[Fallback] ${fromProvider} → ${toProvider} (${reason}) - ${success ? "Success" : "Failed"}`
     );
   }
