@@ -71,10 +71,9 @@ export class WorkflowVersionManager {
       .values({
         workflowId,
         version: newVersionNumber,
+        data: workflowData as any,
+        userId,
         commitMessage: commitMessage || `Version ${newVersionNumber}`,
-        createdBy: userId,
-        workflowData: workflowData as any,
-        parentVersionId: latestVersion?.id || null,
       })
       .returning();
 
@@ -113,7 +112,7 @@ export class WorkflowVersionManager {
       throw new Error("Version does not belong to this workflow");
     }
 
-    const workflowData = version.workflowData as WorkflowData;
+    const workflowData = version.data as WorkflowData;
 
     // Update workflow
     await db
@@ -181,8 +180,8 @@ export class WorkflowVersionManager {
       throw new Error("One or both versions not found");
     }
 
-    const data1 = version1.workflowData as WorkflowData;
-    const data2 = version2.workflowData as WorkflowData;
+    const data1 = version1.data as WorkflowData;
+    const data2 = version2.data as WorkflowData;
 
     // Calculate differences
     const nodes1Ids = new Set(data1.nodes.map((n: any) => n.id));
@@ -233,10 +232,9 @@ export class WorkflowVersionManager {
    * Tag a version (e.g., "production", "v1.0", "stable")
    */
   async tagVersion(versionId: string, tag: string): Promise<void> {
-    await db
-      .update(workflowVersions)
-      .set({ tag })
-      .where(eq(workflowVersions.id, versionId));
+    // Tags are not yet supported in the schema
+    // Store tag information in the commitMessage or as part of metadata if needed
+    console.log(`[VersionManager] Tag requested: ${tag} for version ${versionId}`);
   }
 
   /**
@@ -247,32 +245,9 @@ export class WorkflowVersionManager {
     success: boolean,
     duration: number
   ): Promise<void> {
-    const latestVersion = await db.query.workflowVersions.findFirst({
-      where: eq(workflowVersions.workflowId, workflowId),
-      orderBy: [desc(workflowVersions.version)],
-    });
-
-    if (!latestVersion) return;
-
-    const newExecutionCount = (latestVersion.executionCount || 0) + 1;
-    const currentSuccessRate = latestVersion.successRate || 0;
-    const newSuccessRate = Math.round(
-      ((currentSuccessRate * (newExecutionCount - 1)) + (success ? 100 : 0)) / newExecutionCount
-    );
-    
-    const currentAvgDuration = latestVersion.avgDuration || 0;
-    const newAvgDuration = Math.round(
-      ((currentAvgDuration * (newExecutionCount - 1)) + duration) / newExecutionCount
-    );
-
-    await db
-      .update(workflowVersions)
-      .set({
-        executionCount: newExecutionCount,
-        successRate: newSuccessRate,
-        avgDuration: newAvgDuration,
-      })
-      .where(eq(workflowVersions.id, latestVersion.id));
+    // Version statistics tracking is not yet implemented
+    // This can be added to the schema in a future phase
+    console.log(`[VersionManager] Execution stats: workflow=${workflowId}, success=${success}, duration=${duration}ms`);
   }
 
   /**
@@ -284,7 +259,7 @@ export class WorkflowVersionManager {
       throw new Error("Version not found");
     }
 
-    return version.workflowData as WorkflowData;
+    return version.data as WorkflowData;
   }
 }
 

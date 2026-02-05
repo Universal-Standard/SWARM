@@ -209,26 +209,17 @@ export class WorkflowOrchestrator {
           execution.id
         );
 
-          nodeResults.set(nodeId, result);
+        nodeResults.set(nodeId, result);
 
-          const stepDuration = Date.now() - stepStartTime;
-          await this.logExecution(
-            execution.id,
-            'info',
-            `Step ${stepIndex + 1} completed: ${agent.name} finished in ${stepDuration}ms with ${result.tokenCount} tokens`,
-            agent.id,
-            stepIndex
-          );
-        } catch (stepError: any) {
-          await this.logExecution(
-            execution.id,
-            'error',
-            `Step ${stepIndex + 1} failed: ${stepError.message}`,
-            agent.id,
-            stepIndex
-          );
-          throw stepError;
-        }
+        const stepDuration = Date.now() - stepStartTime;
+        await this.logExecution(
+          execution.id,
+          'info',
+          `Step ${stepIndex + 1} completed: ${agent.name} finished in ${stepDuration}ms with ${result.tokenCount} tokens`,
+          agent.id,
+          stepIndex
+        );
+        
         // Emit agent completed event
         wsManager.emitAgentCompleted(execution.id, agent.id, agent.name, result);
 
@@ -238,6 +229,16 @@ export class WorkflowOrchestrator {
           `Agent ${agent.name} completed with ${result.tokenCount} tokens`,
           agent.id
         );
+      } catch (stepError: any) {
+        await this.logExecution(
+          execution.id,
+          'error',
+          `Step ${stepIndex + 1} failed: ${stepError.message}`,
+          agent.id,
+          stepIndex
+        );
+        throw stepError;
+      }
       }
 
       const lastNodeId = executionOrder[executionOrder.length - 1];

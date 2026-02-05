@@ -20,7 +20,7 @@ const nodeSchema = z.object({
   id: z.string(),
   type: z.string(),
   position: z.object({ x: z.number(), y: z.number() }),
-  data: z.record(z.any()),
+  data: z.record(z.string(), z.any()),
 });
 
 const edgeSchema = z.object({
@@ -58,8 +58,8 @@ export const workflowExportSchema = z.object({
     nodeId: z.string(),
     position: z.object({ x: z.number(), y: z.number() }),
   })).optional(),
-  inputSchema: z.record(z.any()).optional(),
-  outputSchema: z.record(z.any()).optional(),
+  inputSchema: z.record(z.string(), z.any()).optional(),
+  outputSchema: z.record(z.string(), z.any()).optional(),
   includeHistory: z.boolean().optional(),
   includeKnowledge: z.boolean().optional(),
   executionHistory: z.array(z.any()).optional(),

@@ -235,7 +235,7 @@ export async function registerRoutes(app: Express) {
         id: z.string(),
         type: z.string(),
         position: z.object({ x: z.number(), y: z.number() }),
-        data: z.record(z.any()),
+        data: z.record(z.string(), z.any()),
       });
 
       const edgeSchema = z.object({
@@ -383,7 +383,7 @@ export async function registerRoutes(app: Express) {
         type: z.string(),
         name: z.string(),
         description: z.string().optional(),
-        parameters: z.record(z.any()).optional(),
+        parameters: z.record(z.string(), z.any()).optional(),
       });
 
       // Validate the update data with Zod schema
@@ -539,7 +539,7 @@ export async function registerRoutes(app: Express) {
       // Validate the update data with Zod schema
       const updateExecutionSchema = z.object({
         status: z.enum(['pending', 'running', 'completed', 'error']).optional(),
-        output: z.record(z.any()).optional(),
+        output: z.record(z.string(), z.any()).optional(),
         error: z.string().optional(),
       }).strict();
 
@@ -902,8 +902,8 @@ export async function registerRoutes(app: Express) {
         userId,
         name: `${template.name} (Copy)`,
         description: template.description,
-        nodes: workflow.nodes,
-        edges: workflow.edges,
+        nodes: workflow.nodes as any,
+        edges: workflow.edges as any,
         category: template.category,
         isTemplate: false,
       });
@@ -1232,7 +1232,7 @@ Be concise, practical, and provide actionable guidance. When relevant, suggest s
         return res.status(403).json({ error: "Forbidden" });
       }
 
-      const version = await versionManager.getVersion(req.params.id, req.params.versionId);
+      const version = await versionManager.getVersion(req.params.versionId);
       if (!version) {
         return res.status(404).json({ error: "Version not found" });
       }

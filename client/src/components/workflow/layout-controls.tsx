@@ -113,12 +113,8 @@ export function LayoutControls({
               <Zap className="w-4 h-4 mr-2" />
               Force-Directed
             </DropdownMenuItem>
-            <DropdownMenuItem onClick={() => handleAutoArrange('circular')}>
+             <DropdownMenuItem onClick={() => handleAutoArrange('grid')}>
               <Circle className="w-4 h-4 mr-2" />
-              Radial
-            </DropdownMenuItem>
-            <DropdownMenuItem onClick={() => handleAutoArrange('grid')}>
-              <Grid3x3 className="w-4 h-4 mr-2" />
               Grid
             </DropdownMenuItem>
           </DropdownMenuContent>

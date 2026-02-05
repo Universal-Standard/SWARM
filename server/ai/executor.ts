@@ -215,7 +215,7 @@ export class AIExecutor {
     const messages: Array<{ role: 'system' | 'user' | 'assistant'; content: string }> = [];
     
     const enhancedSystemPrompt = this.buildSystemPromptWithKnowledge(
-      agent.systemPrompt,
+      agent.systemPrompt || undefined,
       context.knowledgeContext || []
     );
     
@@ -257,7 +257,7 @@ export class AIExecutor {
     }));
 
     const enhancedSystemPrompt = this.buildSystemPromptWithKnowledge(
-      agent.systemPrompt,
+      agent.systemPrompt || undefined,
       context.knowledgeContext || []
     );
 
@@ -289,39 +289,35 @@ export class AIExecutor {
 
   private async executeGemini(agent: Agent, context: ExecutionContext): Promise<ExecutionResult> {
     const enhancedSystemPrompt = this.buildSystemPromptWithKnowledge(
-      agent.systemPrompt,
+      agent.systemPrompt || undefined,
       context.knowledgeContext || []
     );
 
     // Ensure model is defined
     const modelToUse = agent.model || 'gemini-1.5-flash';
 
-    const model = this.gemini.getGenerativeModel({ 
+    // Use the new @google/genai SDK API
+    const response = await this.gemini.models.generateContent({
       model: modelToUse,
-      systemInstruction: enhancedSystemPrompt,
-    });
-
-    const chat = model.startChat({
-      history: context.messages.slice(0, -1).map(msg => ({
+      contents: context.messages.map(msg => ({
         role: msg.role === 'user' ? 'user' : 'model',
         parts: [{ text: msg.content }],
       })),
-      generationConfig: {
+      config: {
+        systemInstruction: { text: enhancedSystemPrompt },
         temperature: context.temperature / 100,
         maxOutputTokens: context.maxTokens,
       },
     });
 
-    const lastMessage = context.messages[context.messages.length - 1];
-    const result = await chat.sendMessage(lastMessage.content);
-    const response = result.response;
+    const text = response.text || '';
 
     // Estimate token counts for Gemini (rough estimation)
     const promptTokens = Math.ceil(enhancedSystemPrompt.length / 4);
-    const completionTokens = Math.ceil(response.text().length / 4);
+    const completionTokens = Math.ceil(text.length / 4);
 
     return {
-      content: response.text(),
+      content: text,
       tokenCount: promptTokens + completionTokens,
       finishReason: 'stop',
       promptTokens,

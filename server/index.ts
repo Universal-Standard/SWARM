@@ -96,9 +96,9 @@ app.use((req, res, next) => {
     process.on("SIGTERM", async () => {
       log("SIGTERM signal received: closing HTTP server");
       try {
-        basicScheduler.shutdown();
+        await basicScheduler.stop();
         const { scheduler: advancedScheduler } = await import("./lib/scheduler");
-        advancedScheduler.shutdown();
+        // Advanced scheduler doesn't have stop method yet
       } catch (error) {
         log(`Warning: Error during shutdown: ${error instanceof Error ? error.message : 'Unknown error'}`);
       }
@@ -115,16 +115,7 @@ app.use((req, res, next) => {
   // Use enhanced error handler
   app.use(errorHandler);
 
-  // importantly only setup vite in development and after
-  // setting up all the other routes so the catch-all route
-  // doesn't interfere with the other routes
-  if (app.get("env") === "development") {
-    await setupVite(app, app);
-  } else {
-    serveStatic(app);
-  }
-
-  // ALWAYS serve the app on the port specified in the environment variable PORT
+    // ALWAYS serve the app on the port specified in the environment variable PORT
   // Other ports are firewalled. Default to 5000 if not specified.
   // this serves both the API and the client.
   // It is the only port that is not firewalled.
@@ -133,6 +124,15 @@ app.use((req, res, next) => {
   // Create HTTP server and initialize WebSocket
   const server = createServer(app);
   wsManager.initialize(server);
+
+  // importantly only setup vite in development and after
+  // setting up all the other routes so the catch-all route
+  // doesn't interfere with the other routes
+  if (app.get("env") === "development") {
+    await setupVite(app, server);
+  } else {
+    serveStatic(app);
+  }
   
     server.listen(port, "0.0.0.0", () => {
       log(`✓ Server running on port ${port}`);

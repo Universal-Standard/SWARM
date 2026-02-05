@@ -344,25 +344,27 @@ export class DatabaseStorage implements IStorage {
     limit?: number;
     offset?: number;
   }): Promise<ExecutionLog[]> {
-    let query = db
-      .select()
-      .from(executionLogs)
-      .where(eq(executionLogs.executionId, executionId))
-      .orderBy(executionLogs.timestamp);
+    let whereConditions: any = eq(executionLogs.executionId, executionId);
     
     if (filters?.level) {
-      query = query.where(and(
-        eq(executionLogs.executionId, executionId),
+      whereConditions = and(
+        whereConditions,
         eq(executionLogs.level, filters.level)
-      )) as any;
+      );
     }
     
     if (filters?.agentId) {
-      query = query.where(and(
-        eq(executionLogs.executionId, executionId),
+      whereConditions = and(
+        whereConditions,
         eq(executionLogs.agentId, filters.agentId)
-      )) as any;
+      );
     }
+    
+    let query = db
+      .select()
+      .from(executionLogs)
+      .where(whereConditions)
+      .orderBy(executionLogs.timestamp);
     
     if (filters?.limit) {
       query = query.limit(filters.limit) as any;

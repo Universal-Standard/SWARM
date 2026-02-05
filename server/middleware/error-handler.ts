@@ -65,7 +65,7 @@ export function errorHandler(err: any, req: Request, res: Response, next: NextFu
   if (err instanceof ZodError) {
     const response: StructuredError = {
       error: 'Validation failed',
-      details: err.errors.map(e => ({
+      details: err.issues.map((e: any) => ({
         field: e.path.join('.'),
         message: e.message,
         code: e.code,

@@ -262,17 +262,17 @@ export class CostTracker {
       .where(
         and(
           eq(executions.userId, userId),
-          gte(executionCosts.calculatedAt, startDate),
-          lte(executionCosts.calculatedAt, endDate)
+          gte(executionCosts.timestamp, startDate),
+          lte(executionCosts.timestamp, endDate)
         )
       )
-      .orderBy(executionCosts.calculatedAt);
+      .orderBy(executionCosts.timestamp);
 
     // Group by date
     const dailyCosts = new Map<string, number>();
     costs.forEach(record => {
-      const date = record.cost.calculatedAt.toISOString().split('T')[0];
-      dailyCosts.set(date, (dailyCosts.get(date) || 0) + (record.cost.estimatedCost || 0));
+      const date = record.cost.timestamp.toISOString().split('T')[0];
+      dailyCosts.set(date, (dailyCosts.get(date) || 0) + record.cost.costUsd);
     });
 
     return Array.from(dailyCosts.entries())
@@ -304,7 +304,7 @@ export class CostTracker {
         workflowStats.set(wfId, { name: "Unknown", totalCost: 0, executionCount: 0 });
       }
       const stats = workflowStats.get(wfId)!;
-      stats.totalCost += record.cost.estimatedCost || 0;
+      stats.totalCost += record.cost.costUsd;
       stats.executionCount++;
     });
 
@@ -339,8 +339,8 @@ export class CostTracker {
       .where(
         and(
           eq(executions.userId, userId),
-          gte(executionCosts.calculatedAt, startDate),
-          lte(executionCosts.calculatedAt, endDate)
+          gte(executionCosts.timestamp, startDate),
+          lte(executionCosts.timestamp, endDate)
         )
       );
 
@@ -360,17 +360,17 @@ export class CostTracker {
     ];
 
     const rows = costs.map(record => [
-      record.cost.calculatedAt.toISOString(),
+      record.cost.timestamp.toISOString(),
       record.execution.id,
       record.execution.workflowId,
       record.agent.name,
       record.cost.provider,
       record.cost.model,
-      record.cost.inputTokens,
-      record.cost.outputTokens,
+      record.cost.promptTokens,
+      record.cost.completionTokens,
       record.cost.totalTokens,
-      record.cost.estimatedCost,
-      record.cost.currency,
+      record.cost.costUsd,
+      'USD',
     ]);
 
     const csv = [

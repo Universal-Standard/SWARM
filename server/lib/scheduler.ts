@@ -54,7 +54,7 @@ export class WorkflowScheduler {
       .insert(workflowSchedules)
       .values({
         ...data,
-        nextRunAt,
+        nextRun: nextRunAt,
       })
       .returning();
 
@@ -186,15 +186,14 @@ export class WorkflowScheduler {
 
       // Execute workflow
       try {
-        await orchestrator.executeWorkflow(execution.id);
+        await orchestrator.executeWorkflow(schedule.workflowId, { scheduled: true, scheduleId: schedule.id });
 
         // Update schedule statistics
         await db
           .update(workflowSchedules)
           .set({
-            lastRunAt: new Date(),
-            nextRunAt: this.getNextRunTime(schedule.cronExpression, schedule.timezone),
-            executionCount: (schedule.executionCount || 0) + 1,
+            lastRun: new Date(),
+            nextRun: this.getNextRunTime(schedule.cronExpression, schedule.timezone),
             updatedAt: new Date(),
           })
           .where(eq(workflowSchedules.id, schedule.id));
