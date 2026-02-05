@@ -7,21 +7,31 @@ const AUTH_TAG_LENGTH = 16;
 
 /**
  * Get encryption key from environment variable
- * Falls back to a default key for development (NOT SECURE FOR PRODUCTION)
+ * Throws error if not properly configured (no insecure defaults for production)
  */
 function getEncryptionKey(): Buffer {
   const key = process.env.ENCRYPTION_KEY;
   const salt = process.env.ENCRYPTION_SALT;
+  const isDevelopment = process.env.NODE_ENV === 'development';
   
-  if (!salt) {
-    console.warn('WARNING: ENCRYPTION_SALT not set in environment. Using insecure default salt for development only!');
+  // In production, require both key and salt
+  if (!isDevelopment) {
+    if (!key) {
+      throw new Error('ENCRYPTION_KEY environment variable is required in production. Generate with: openssl rand -hex 32');
+    }
+    if (!salt) {
+      throw new Error('ENCRYPTION_SALT environment variable is required in production. Generate with: openssl rand -hex 32');
+    }
   }
   
+  // Development-only fallback with clear warnings
+  if (!salt) {
+    console.warn('⚠️  WARNING: ENCRYPTION_SALT not set. Using insecure default for DEVELOPMENT ONLY!');
+  }
   const effectiveSalt = salt || 'dev-only-salt-not-for-production';
   
   if (!key) {
-    console.warn('WARNING: ENCRYPTION_KEY not set in environment. Using insecure default key for development only!');
-    // Generate a deterministic key for development
+    console.warn('⚠️  WARNING: ENCRYPTION_KEY not set. Using insecure default for DEVELOPMENT ONLY!');
     return crypto.scryptSync('dev-only-key-not-for-production', effectiveSalt, KEY_LENGTH);
   }
   

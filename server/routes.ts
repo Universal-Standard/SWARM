@@ -56,8 +56,17 @@ async function syncAgentsFromNodes(workflowId: string, nodes: any[]) {
   }
 }
 
-// Helper to get current authenticated user ID
+// Helper to get current authenticated user ID with proper validation
 function getUserId(req: any): string {
+  if (!req.user) {
+    throw new Error('User not authenticated');
+  }
+  if (!req.user.claims) {
+    throw new Error('Invalid user session: missing claims');
+  }
+  if (!req.user.claims.sub) {
+    throw new Error('Invalid user session: missing user ID');
+  }
   return req.user.claims.sub;
 }
 
