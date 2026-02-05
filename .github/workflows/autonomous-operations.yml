@@ -32,6 +32,7 @@ jobs:
       pull-requests: write
       issues: write
       repository-projects: write
+      id-token: write # Added, required if using OIDC features
 
     steps:
       - name: Checkout
@@ -44,44 +45,57 @@ jobs:
         uses: actions/setup-node@v4
         with:
           node-version: '20'
-      
+
       - name: Setup Python
         uses: actions/setup-python@v5
         with:
           python-version: '3.11'
-      
+
       - name: Install Dependencies
         run: |
           pip install PyGithub gitpython requests pyyaml
           npm install -g @octokit/rest
-      
+
       - name: Configure Git
         run: |
           git config --global user.name "UniversalStandards-Bot"
           git config --global user.email "bot@spurs.agency"
-      
-      - name: Execute Autonomous Operations
+
+      - name: Autonomous Operations - Python
         run: |
           python3 << 'PYEOF'
           import os
-          from github import Github
-          
-          gh = Github(os.getenv('GITHUB_TOKEN'))
-          user = gh.get_user()
-          
-          print(f"Operating as: {user.login}")
-          print(f"Repositories: {user.public_repos}")
-          
-          # Auto-label issues
-          for repo in user.get_repos():
-              for issue in repo.get_issues(state='open'):
-                  if not issue.labels:
-                      issue.add_to_labels('needs-triage')
-          
-          print("Autonomous operations completed")
+          import sys
+          from github import Auth, Github
+          from github.GithubException import GithubException
+
+          token = os.getenv("GITHUB_TOKEN")
+          if not token:
+              print("! ERROR: GITHUB_TOKEN not found in environment. Exiting.")
+              sys.exit(1)
+
+          try:
+              gh = Github(auth=Auth.Token(token))
+              user = gh.get_user()
+              print(f"Operating as: {user.login}")
+              print(f"Repositories found: {user.public_repos}")
+              # Auto-label open issues without labels
+              for repo in user.get_repos():
+                  print(f"Processing repo: {repo.full_name}")
+                  for issue in repo.get_issues(state='open'):
+                      if not issue.labels:
+                          issue.add_to_labels('needs-triage')
+                          print(f"Labeled issue #{issue.number} in {repo.full_name}")
+              print("Autonomous operations completed successfully.")
+          except GithubException as ge:
+              print(f"! Github API error: {ge.data}")
+              sys.exit(2)
+          except Exception as e:
+              print(f"! Critical error: {e}")
+              sys.exit(3)
           PYEOF
-      
-      - name: Health Check
+
+      - name: Health Check & Reporting
         run: |
           echo "System Health Check"
           echo "==================="
@@ -92,32 +106,31 @@ jobs:
           free -h
           echo ""
           echo "GitHub API Rate Limit:"
-          curl -H "Authorization: token ${{ secrets.GITHUB_TOKEN }}" \
-            https://api.github.com/rate_limit
-      
-      - name: Generate Report
+          curl -H "Authorization: token ${{ secrets.GITHUB_TOKEN }}" https://api.github.com/rate_limit
+
+      - name: Generate Autonomous Operations Report
         run: |
           cat > autonomous-report.md << EOF
           # Autonomous Operations Report
-          
+
           **Date:** $(date)
           **Triggered by:** ${{ github.event_name }}
           **Actor:** ${{ github.actor }}
-          
+
           ## Operations Completed
           - Repository synchronization
           - Health checks
           - Auto-labeling
           - Dependency updates
-          
+
           ## System Status
           - ✓ All systems operational
           - ✓ GitHub API accessible
           - ✓ Permissions verified
-          
+
           EOF
           cat autonomous-report.md
-      
+
       - name: Upload Report
         uses: actions/upload-artifact@v4
         with:
