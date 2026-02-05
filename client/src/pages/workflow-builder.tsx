@@ -3,6 +3,8 @@ import {
   ReactFlow,
   ReactFlowProvider,
   Controls,
+  Background,
+  BackgroundVariant,
   applyNodeChanges,
   applyEdgeChanges,
   addEdge,
@@ -24,7 +26,7 @@ import {
   Settings, 
   Code, 
   Database,
-  Search as SearchIcon,
+  Search,
   Shield,
   Sparkles,
   FileJson,
@@ -385,8 +387,8 @@ function WorkflowBuilderContent() {
   };
   
   // Toolbar handlers
-  const handleAutoLayout = useCallback((algorithm: LayoutAlgorithm) => {
-    const layoutedNodes = applyLayout(nodes, edges, { algorithm });
+  const handleAutoLayout = useCallback(async (algorithm: LayoutAlgorithm) => {
+    const layoutedNodes = await applyLayout(nodes, edges, { algorithm });
     setNodes(layoutedNodes);
   }, [nodes, edges]);
   
@@ -841,25 +843,18 @@ function WorkflowBuilderContent() {
             </Card>
           </Panel>
         </ReactFlow>
-        <NodeContextMenu
-          node={selectedNode || undefined}
-          onDuplicate={handleNodeDuplicate}
-          onDelete={handleNodeDelete}
-          onCopy={(node) => copy([node])}
-          onLock={handleNodeLock}
+        <WorkflowCanvas
+          nodes={nodes}
+          edges={edges}
+          onNodesChange={onNodesChange}
+          onEdgesChange={onEdgesChange}
+          onConnect={onConnect}
+          onNodeClick={onNodeClick}
+          nodeTypes={nodeTypes}
+          showGrid={showGrid}
+          gridSize={gridSize}
+          snapToGridEnabled={snapToGrid}
         >
-          <WorkflowCanvas
-            nodes={nodes}
-            edges={edges}
-            onNodesChange={onNodesChange}
-            onEdgesChange={onEdgesChange}
-            onConnect={onConnect}
-            onNodeClick={onNodeClick}
-            nodeTypes={nodeTypes}
-            showGrid={showGrid}
-            gridSize={gridSize}
-            snapToGridEnabled={snapToGrid}
-          >
             <Controls />
             
             {/* Add Agent Panel */}
@@ -898,7 +893,7 @@ function WorkflowBuilderContent() {
                       className="justify-start gap-2"
                       data-testid="button-add-researcher"
                     >
-                      <SearchIcon className="w-4 h-4" />
+                      <Search className="w-4 h-4" />
                       Researcher
                     </Button>
                     <Button 
@@ -953,7 +948,6 @@ function WorkflowBuilderContent() {
             {/* Zoom Indicator */}
             <ZoomIndicator />
           </WorkflowCanvas>
-        </NodeContextMenu>
 
         {/* Agent Config Panel */}
         {selectedNode && (
@@ -992,7 +986,7 @@ function WorkflowBuilderContent() {
           <SheetContent side="left" className="w-[400px]">
             <SheetHeader>
               <SheetTitle className="flex items-center gap-2">
-                <SearchIcon className="w-5 h-5" />
+                <Search className="w-5 h-5" />
                 Search Nodes
               </SheetTitle>
               <SheetDescription>

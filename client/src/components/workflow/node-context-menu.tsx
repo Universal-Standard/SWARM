@@ -1,5 +1,6 @@
 import { memo } from 'react';
 import { useState, useCallback } from 'react';
+import { Node } from '@xyflow/react';
 import {
   ContextMenu,
   ContextMenuContent,
@@ -128,8 +129,8 @@ export function useNodeClipboard() {
     setClipboard(nodes);
   }, []);
 
-  const paste = useCallback((offsetX: number = 50, offsetY: number = 50): ClipboardNode[] => {
-    return clipboard.map(node => ({
+  const paste = useCallback((offsetX: number = 50, offsetY: number = 50): Node[] => {
+    return clipboard.map((node: ClipboardNode) => ({
       ...node,
       id: `${node.id}-copy-${Date.now()}`,
       position: {
@@ -140,7 +141,7 @@ export function useNodeClipboard() {
         ...node.data,
         label: `${node.data?.label || 'Node'} (Copy)`,
       },
-    }));
+    } as Node));
   }, [clipboard]);
 
   const canPaste = clipboard.length > 0;

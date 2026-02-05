@@ -275,11 +275,11 @@ export function NodeSearch({ nodes, onNodeSelect, onNodesHighlight }: NodeSearch
                     {node.data?.provider as string}
                   </Badge>
                 </div>
-                {node.data?.description && (
+                {node.data?.description ? (
                   <p className="text-xs text-muted-foreground mt-1 line-clamp-2">
-                    {node.data.description as string}
+                    {typeof node.data.description === 'string' ? node.data.description : String(node.data.description)}
                   </p>
-                )}
+                ) : null}
               </button>
             ))}
             {filteredNodes.length === 0 && (

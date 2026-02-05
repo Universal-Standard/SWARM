@@ -1,6 +1,7 @@
 import crypto from 'crypto';
 import { storage } from './storage';
 import { orchestrator } from './ai/orchestrator';
+import { logger } from './lib/logger';
 
 export class WebhookHandler {
   /**
@@ -84,7 +85,7 @@ export class WebhookHandler {
 
       return { success: true, executionId: execution.id };
     } catch (error: any) {
-      console.error('Error processing webhook:', error);
+      logger.error('Error processing webhook', error instanceof Error ? error : new Error(String(error)));
       await this.logWebhook(null, payload, headers, 'failed', error.message);
       return { success: false, error: error.message };
     }
@@ -111,7 +112,7 @@ export class WebhookHandler {
         error,
       });
     } catch (logError) {
-      console.error('Error logging webhook:', logError);
+      logger.error('Error logging webhook', logError instanceof Error ? logError : new Error(String(logError)));
     }
   }
 

@@ -7,16 +7,17 @@ import {
   RateLimitError,
   type StructuredError,
 } from '@shared/errors';
-import { ZodError } from 'zod';
+import { ZodError, type ZodIssue } from 'zod';
+import { logger } from '../lib/logger';
 
 /**
  * Advanced error handling middleware with structured error responses
  */
 export function errorHandler(err: any, req: Request, res: Response, next: NextFunction) {
   // Log error with stack trace for debugging
-  console.error(`[Error] ${req.method} ${req.path}:`, err);
+  logger.error(`[Error] ${req.method} ${req.path}`, err instanceof Error ? err : new Error(String(err)));
   if (err.stack && process.env.NODE_ENV === 'development') {
-    console.error('Stack trace:', err.stack);
+    logger.debug('Stack trace', { stack: err.stack });
   }
 
   // Handle specific error types
@@ -65,7 +66,7 @@ export function errorHandler(err: any, req: Request, res: Response, next: NextFu
   if (err instanceof ZodError) {
     const response: StructuredError = {
       error: 'Validation failed',
-      details: err.errors.map(e => ({
+      details: err.issues.map((e: ZodIssue) => ({
         field: e.path.join('.'),
         message: e.message,
         code: e.code,

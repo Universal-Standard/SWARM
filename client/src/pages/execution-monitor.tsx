@@ -155,18 +155,18 @@ export default function ExecutionMonitor() {
         </Card>
       </div>
 
-      {execution.output && (
+      {execution.output ? (
         <Card>
           <CardHeader className="pb-3">
             <CardTitle className="text-lg">Output</CardTitle>
           </CardHeader>
           <CardContent>
             <pre className="text-sm bg-muted p-4 rounded-lg overflow-auto">
-              {JSON.stringify(execution.output, null, 2)}
+              {typeof execution.output === 'object' ? JSON.stringify(execution.output, null, 2) : String(execution.output)}
             </pre>
           </CardContent>
         </Card>
-      )}
+      ) : null}
 
       {execution.error && (
         <Card className="border-destructive">

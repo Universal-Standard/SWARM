@@ -3,6 +3,7 @@ import Anthropic from '@anthropic-ai/sdk';
 import { GoogleGenAI } from '@google/genai';
 import type { Agent, KnowledgeEntry } from '@shared/schema';
 import { fallbackManager } from './providers/fallback-manager';
+import { logger } from '../lib/logger';
 
 interface ExecutionContext {
   agentId: string;
@@ -101,7 +102,7 @@ export class AIExecutor {
         throw error;
       }
 
-      console.log(`[Executor] Primary provider ${agent.provider} failed, attempting fallback...`);
+      logger.info(`[Executor] Primary provider ${agent.provider} failed, attempting fallback...`);
     }
 
     // Try fallback providers
@@ -120,7 +121,7 @@ export class AIExecutor {
           model: fallbackManager.getModelForProvider(nextProvider, agent.model),
         };
 
-        console.log(`[Executor] Trying fallback provider: ${nextProvider} with model ${fallbackAgent.model}`);
+        logger.info(`[Executor] Trying fallback provider: ${nextProvider} with model ${fallbackAgent.model}`);
         
         const result = await this.executeSingleProvider(fallbackAgent, context);
         
@@ -139,7 +140,7 @@ export class AIExecutor {
         failedProviders.add(nextProvider);
         fallbackManager.recordFailure(nextProvider, error.message);
         fallbackManager.logFallbackEvent(agent.provider, nextProvider, error.message, false);
-        console.log(`[Executor] Fallback provider ${nextProvider} also failed:`, error.message);
+        logger.info(`[Executor] Fallback provider ${nextProvider} also failed`, { message: error.message });
       }
     }
 
@@ -215,7 +216,7 @@ export class AIExecutor {
     const messages: Array<{ role: 'system' | 'user' | 'assistant'; content: string }> = [];
     
     const enhancedSystemPrompt = this.buildSystemPromptWithKnowledge(
-      agent.systemPrompt,
+      agent.systemPrompt || undefined,
       context.knowledgeContext || []
     );
     
@@ -257,7 +258,7 @@ export class AIExecutor {
     }));
 
     const enhancedSystemPrompt = this.buildSystemPromptWithKnowledge(
-      agent.systemPrompt,
+      agent.systemPrompt || undefined,
       context.knowledgeContext || []
     );
 
@@ -289,39 +290,35 @@ export class AIExecutor {
 
   private async executeGemini(agent: Agent, context: ExecutionContext): Promise<ExecutionResult> {
     const enhancedSystemPrompt = this.buildSystemPromptWithKnowledge(
-      agent.systemPrompt,
+      agent.systemPrompt || undefined,
       context.knowledgeContext || []
     );
 
     // Ensure model is defined
     const modelToUse = agent.model || 'gemini-1.5-flash';
 
-    const model = this.gemini.getGenerativeModel({ 
+    // Use the new @google/genai SDK API
+    const response = await this.gemini.models.generateContent({
       model: modelToUse,
-      systemInstruction: enhancedSystemPrompt,
-    });
-
-    const chat = model.startChat({
-      history: context.messages.slice(0, -1).map(msg => ({
+      contents: context.messages.map(msg => ({
         role: msg.role === 'user' ? 'user' : 'model',
         parts: [{ text: msg.content }],
       })),
-      generationConfig: {
+      config: {
+        systemInstruction: { text: enhancedSystemPrompt },
         temperature: context.temperature / 100,
         maxOutputTokens: context.maxTokens,
       },
     });
 
-    const lastMessage = context.messages[context.messages.length - 1];
-    const result = await chat.sendMessage(lastMessage.content);
-    const response = result.response;
+    const text = response.text || '';
 
     // Estimate token counts for Gemini (rough estimation)
     const promptTokens = Math.ceil(enhancedSystemPrompt.length / 4);
-    const completionTokens = Math.ceil(response.text().length / 4);
+    const completionTokens = Math.ceil(text.length / 4);
 
     return {
-      content: response.text(),
+      content: text,
       tokenCount: promptTokens + completionTokens,
       finishReason: 'stop',
       promptTokens,

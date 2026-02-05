@@ -149,23 +149,23 @@ export default function AppExecutionDetail() {
 
         <TabsContent value="output" className="flex-1 overflow-auto mt-4">
           <div className="grid gap-4">
-            {execution.output && (
+            {execution.output ? (
               <div className="bg-muted rounded-lg p-4">
                 <h3 className="text-sm font-medium mb-2">Output</h3>
                 <pre className="text-sm whitespace-pre-wrap break-words">
-                  {formatOutput(execution.output)}
+                  {typeof execution.output === 'string' || typeof execution.output === 'object' ? formatOutput(execution.output) : String(execution.output)}
                 </pre>
               </div>
-            )}
+            ) : null}
 
-            {execution.input && (
+            {execution.input ? (
               <div className="bg-muted rounded-lg p-4">
                 <h3 className="text-sm font-medium mb-2">Input</h3>
                 <pre className="text-sm whitespace-pre-wrap break-words">
-                  {formatOutput(execution.input)}
+                  {typeof execution.input === 'string' || typeof execution.input === 'object' ? formatOutput(execution.input) : String(execution.input)}
                 </pre>
               </div>
-            )}
+            ) : null}
 
             {execution.error && (
               <div className="bg-destructive/10 border border-destructive/20 rounded-lg p-4">

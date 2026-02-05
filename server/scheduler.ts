@@ -1,6 +1,7 @@
 import * as cron from 'node-cron';
 import { storage } from './storage';
 import { orchestrator } from './ai/orchestrator';
+import { logger } from './lib/logger';
 
 interface ScheduledTask {
   scheduleId: string;
@@ -13,11 +14,11 @@ class WorkflowScheduler {
 
   async start() {
     if (this.isRunning) {
-      console.log('Scheduler already running');
+      logger.info('Scheduler already running');
       return;
     }
 
-    console.log('Starting workflow scheduler...');
+    logger.info('Starting workflow scheduler...');
     this.isRunning = true;
 
     // Load all enabled schedules
@@ -30,7 +31,7 @@ class WorkflowScheduler {
   }
 
   async stop() {
-    console.log('Stopping workflow scheduler...');
+    logger.info('Stopping workflow scheduler...');
     this.isRunning = false;
 
     // Stop all scheduled tasks
@@ -50,7 +51,7 @@ class WorkflowScheduler {
       for (const [scheduleId, task] of taskEntries) {
         const schedule = schedules.find(s => s.id === scheduleId);
         if (!schedule) {
-          console.log(`Removing schedule ${scheduleId}`);
+          logger.info(`Removing schedule ${scheduleId}`);
           task.cronTask.stop();
           this.tasks.delete(scheduleId);
         }
@@ -66,7 +67,7 @@ class WorkflowScheduler {
         }
       }
     } catch (error) {
-      console.error('Error loading schedules:', error);
+      logger.error('Error loading schedules', error instanceof Error ? error : new Error(String(error)));
     }
   }
 
@@ -74,11 +75,11 @@ class WorkflowScheduler {
     try {
       // Validate cron expression
       if (!cron.validate(schedule.cronExpression)) {
-        console.error(`Invalid cron expression for schedule ${schedule.id}: ${schedule.cronExpression}`);
+        logger.error(`Invalid cron expression for schedule ${schedule.id}: ${schedule.cronExpression}`);
         return;
       }
 
-      console.log(`Scheduling workflow ${schedule.workflowId} with cron: ${schedule.cronExpression}`);
+      logger.info(`Scheduling workflow ${schedule.workflowId} with cron: ${schedule.cronExpression}`);
 
       const cronTask = cron.schedule(
         schedule.cronExpression,
@@ -95,18 +96,18 @@ class WorkflowScheduler {
         cronTask,
       });
     } catch (error) {
-      console.error(`Error scheduling workflow ${schedule.workflowId}:`, error);
+      logger.error(`Error scheduling workflow ${schedule.workflowId}`, error instanceof Error ? error : new Error(String(error)));
     }
   }
 
   private async executeScheduledWorkflow(schedule: any) {
-    console.log(`Executing scheduled workflow ${schedule.workflowId}`);
+    logger.info(`Executing scheduled workflow ${schedule.workflowId}`);
 
     try {
       // Get workflow to find userId
       const workflow = await storage.getWorkflowById(schedule.workflowId);
       if (!workflow) {
-        console.error(`Workflow ${schedule.workflowId} not found`);
+        logger.error(`Workflow ${schedule.workflowId} not found`);
         return;
       }
 
@@ -119,9 +120,9 @@ class WorkflowScheduler {
         lastRun: now,
       });
 
-      console.log(`Successfully executed scheduled workflow ${schedule.workflowId}`);
+      logger.info(`Successfully executed scheduled workflow ${schedule.workflowId}`);
     } catch (error) {
-      console.error(`Error executing scheduled workflow ${schedule.workflowId}:`, error);
+      logger.error(`Error executing scheduled workflow ${schedule.workflowId}`, error instanceof Error ? error : new Error(String(error)));
     }
   }
 

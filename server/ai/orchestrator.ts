@@ -5,6 +5,7 @@ import { costTracker } from '../lib/cost-tracker';
 import { versionManager } from '../lib/workflow-version';
 import { wsManager } from '../websocket';
 import { workflowValidator } from '../lib/workflow-validator';
+import { logger } from '../lib/logger';
 
 interface WorkflowNode {
   id: string;
@@ -155,7 +156,7 @@ export class WorkflowOrchestrator {
               }
             );
           } catch (costError: any) {
-            console.error('Error tracking cost:', costError);
+            logger.error('Error tracking cost', costError instanceof Error ? costError : new Error(String(costError)));
             // Don't fail execution if cost tracking fails
           }
         }
@@ -209,26 +210,17 @@ export class WorkflowOrchestrator {
           execution.id
         );
 
-          nodeResults.set(nodeId, result);
+        nodeResults.set(nodeId, result);
 
-          const stepDuration = Date.now() - stepStartTime;
-          await this.logExecution(
-            execution.id,
-            'info',
-            `Step ${stepIndex + 1} completed: ${agent.name} finished in ${stepDuration}ms with ${result.tokenCount} tokens`,
-            agent.id,
-            stepIndex
-          );
-        } catch (stepError: any) {
-          await this.logExecution(
-            execution.id,
-            'error',
-            `Step ${stepIndex + 1} failed: ${stepError.message}`,
-            agent.id,
-            stepIndex
-          );
-          throw stepError;
-        }
+        const stepDuration = Date.now() - stepStartTime;
+        await this.logExecution(
+          execution.id,
+          'info',
+          `Step ${stepIndex + 1} completed: ${agent.name} finished in ${stepDuration}ms with ${result.tokenCount} tokens`,
+          agent.id,
+          stepIndex
+        );
+        
         // Emit agent completed event
         wsManager.emitAgentCompleted(execution.id, agent.id, agent.name, result);
 
@@ -238,6 +230,16 @@ export class WorkflowOrchestrator {
           `Agent ${agent.name} completed with ${result.tokenCount} tokens`,
           agent.id
         );
+      } catch (stepError: any) {
+        await this.logExecution(
+          execution.id,
+          'error',
+          `Step ${stepIndex + 1} failed: ${stepError.message}`,
+          agent.id,
+          stepIndex
+        );
+        throw stepError;
+      }
       }
 
       const lastNodeId = executionOrder[executionOrder.length - 1];
@@ -253,7 +255,7 @@ export class WorkflowOrchestrator {
       try {
         await versionManager.updateVersionStats(workflowId, true, duration);
       } catch (versionError: any) {
-        console.error('Error updating version stats:', versionError);
+        logger.error('Error updating version stats', versionError instanceof Error ? versionError : new Error(String(versionError)));
       }
 
       await this.logExecution(execution.id, 'info', 'Workflow execution completed');
@@ -275,7 +277,7 @@ export class WorkflowOrchestrator {
         try {
           await versionManager.updateVersionStats(workflowId, false, duration);
         } catch (versionError: any) {
-          console.error('Error updating version stats:', versionError);
+          logger.error('Error updating version stats', versionError instanceof Error ? versionError : new Error(String(versionError)));
         }
 
         await this.logExecution(
@@ -287,7 +289,7 @@ export class WorkflowOrchestrator {
         // Emit execution failed event
         wsManager.emitExecutionFailed(execution.id, errorMessage);
       } catch (updateError: any) {
-        console.error('Failed to update execution with error status:', updateError);
+        logger.error('Failed to update execution with error status', updateError instanceof Error ? updateError : new Error(String(updateError)));
       }
 
       throw error;
@@ -387,7 +389,7 @@ export class WorkflowOrchestrator {
         agent.id
       );
     } catch (error: any) {
-      console.error('Failed to extract and store knowledge:', error);
+      logger.error('Failed to extract and store knowledge', error instanceof Error ? error : new Error(String(error)));
       // Don't fail the workflow if knowledge extraction fails
     }
   }

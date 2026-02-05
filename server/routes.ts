@@ -19,6 +19,7 @@ import {
 import { withGitHubAuth, type GitHubAuthRequest } from "./middleware/github-auth";
 import { encrypt, decrypt, maskToken } from "./auth/encryption";
 import { WorkflowValidationError } from "@shared/errors";
+import { logger } from "./lib/logger";
 
 // Execution request schema - only workflowId and input are needed from client
 const executeWorkflowSchema = insertExecutionSchema.pick({ workflowId: true, input: true });
@@ -56,8 +57,17 @@ async function syncAgentsFromNodes(workflowId: string, nodes: any[]) {
   }
 }
 
-// Helper to get current authenticated user ID
+// Helper to get current authenticated user ID with proper validation
 function getUserId(req: any): string {
+  if (!req.user) {
+    throw new Error('User not authenticated');
+  }
+  if (!req.user.claims) {
+    throw new Error('Invalid user session: missing claims');
+  }
+  if (!req.user.claims.sub) {
+    throw new Error('Invalid user session: missing user ID');
+  }
   return req.user.claims.sub;
 }
 
@@ -72,7 +82,7 @@ export async function registerRoutes(app: Express) {
       const user = await storage.getUser(userId);
       res.json(user);
     } catch (error) {
-      console.error("Error fetching user:", error);
+      logger.error("Error fetching user", error instanceof Error ? error : new Error(String(error)));
       res.status(500).json({ message: "Failed to fetch user" });
     }
   });
@@ -124,7 +134,7 @@ export async function registerRoutes(app: Express) {
       // Redirect to settings page
       res.redirect('/app/settings?github=connected');
     } catch (error: any) {
-      console.error('GitHub OAuth callback error:', error);
+      logger.error('GitHub OAuth callback error', error instanceof Error ? error : new Error(String(error)));
       res.redirect('/app/settings?github=error');
     }
   });
@@ -226,7 +236,7 @@ export async function registerRoutes(app: Express) {
         id: z.string(),
         type: z.string(),
         position: z.object({ x: z.number(), y: z.number() }),
-        data: z.record(z.any()),
+        data: z.record(z.string(), z.any()),
       });
 
       const edgeSchema = z.object({
@@ -374,7 +384,7 @@ export async function registerRoutes(app: Express) {
         type: z.string(),
         name: z.string(),
         description: z.string().optional(),
-        parameters: z.record(z.any()).optional(),
+        parameters: z.record(z.string(), z.any()).optional(),
       });
 
       // Validate the update data with Zod schema
@@ -530,7 +540,7 @@ export async function registerRoutes(app: Express) {
       // Validate the update data with Zod schema
       const updateExecutionSchema = z.object({
         status: z.enum(['pending', 'running', 'completed', 'error']).optional(),
-        output: z.record(z.any()).optional(),
+        output: z.record(z.string(), z.any()).optional(),
         error: z.string().optional(),
       }).strict();
 
@@ -893,8 +903,8 @@ export async function registerRoutes(app: Express) {
         userId,
         name: `${template.name} (Copy)`,
         description: template.description,
-        nodes: workflow.nodes,
-        edges: workflow.edges,
+        nodes: workflow.nodes as any,
+        edges: workflow.edges as any,
         category: template.category,
         isTemplate: false,
       });
@@ -1115,7 +1125,7 @@ Be concise, practical, and provide actionable guidance. When relevant, suggest s
       
       res.json(updatedChat);
     } catch (error: any) {
-      console.error('Assistant chat error:', error);
+      logger.error('Assistant chat error', error instanceof Error ? error : new Error(String(error)));
       
       // Handle OpenAI quota/rate limit errors gracefully
       if (error.status === 429 || error.message?.includes('quota')) {
@@ -1223,7 +1233,7 @@ Be concise, practical, and provide actionable guidance. When relevant, suggest s
         return res.status(403).json({ error: "Forbidden" });
       }
 
-      const version = await versionManager.getVersion(req.params.id, req.params.versionId);
+      const version = await versionManager.getVersion(req.params.versionId);
       if (!version) {
         return res.status(404).json({ error: "Version not found" });
       }

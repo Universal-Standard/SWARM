@@ -2,13 +2,32 @@ import { Octokit } from "@octokit/rest";
 import { encrypt, decrypt } from "./encryption";
 import { storage } from "../storage";
 import type { User } from "@shared/schema";
+import { logger } from "../lib/logger";
 
 /**
  * GitHub OAuth configuration
+ * Requires proper configuration in production
  */
 const GITHUB_CLIENT_ID = process.env.GITHUB_CLIENT_ID;
 const GITHUB_CLIENT_SECRET = process.env.GITHUB_CLIENT_SECRET;
-const GITHUB_REDIRECT_URI = process.env.GITHUB_REDIRECT_URI || 'http://localhost:5000/api/auth/github/callback';
+const GITHUB_REDIRECT_URI = process.env.GITHUB_REDIRECT_URI;
+
+// Validate GitHub OAuth configuration
+function validateGitHubConfig() {
+  if (!GITHUB_CLIENT_ID || !GITHUB_CLIENT_SECRET || !GITHUB_REDIRECT_URI) {
+    const missing = [];
+    if (!GITHUB_CLIENT_ID) missing.push('GITHUB_CLIENT_ID');
+    if (!GITHUB_CLIENT_SECRET) missing.push('GITHUB_CLIENT_SECRET');
+    if (!GITHUB_REDIRECT_URI) missing.push('GITHUB_REDIRECT_URI');
+    
+    throw new Error(`GitHub OAuth not configured. Missing: ${missing.join(', ')}\nSet these in your .env file or disable GitHub OAuth.`);
+  }
+  
+  // Warn about localhost in production
+  if (process.env.NODE_ENV === 'production' && GITHUB_REDIRECT_URI.includes('localhost')) {
+    logger.warn('⚠️  WARNING: GitHub OAuth redirect URI contains localhost in production. This will not work!');
+  }
+}
 
 /**
  * Generate GitHub OAuth authorization URL
@@ -16,9 +35,11 @@ const GITHUB_REDIRECT_URI = process.env.GITHUB_REDIRECT_URI || 'http://localhost
  * @returns Authorization URL
  */
 export function getGitHubAuthUrl(state: string): string {
+  validateGitHubConfig();
+  
   const params = new URLSearchParams({
-    client_id: GITHUB_CLIENT_ID || '',
-    redirect_uri: GITHUB_REDIRECT_URI,
+    client_id: GITHUB_CLIENT_ID!,
+    redirect_uri: GITHUB_REDIRECT_URI!,
     scope: 'repo,user:email,read:org',
     state,
   });
@@ -36,6 +57,8 @@ export async function exchangeCodeForToken(code: string): Promise<{
   refreshToken?: string;
   expiresAt?: Date;
 }> {
+  validateGitHubConfig();
+  
   const response = await fetch('https://github.com/login/oauth/access_token', {
     method: 'POST',
     headers: {
@@ -43,10 +66,10 @@ export async function exchangeCodeForToken(code: string): Promise<{
       Accept: 'application/json',
     },
     body: JSON.stringify({
-      client_id: GITHUB_CLIENT_ID,
-      client_secret: GITHUB_CLIENT_SECRET,
+      client_id: GITHUB_CLIENT_ID!,
+      client_secret: GITHUB_CLIENT_SECRET!,
       code,
-      redirect_uri: GITHUB_REDIRECT_URI,
+      redirect_uri: GITHUB_REDIRECT_URI!,
     }),
   });
 
@@ -103,7 +126,7 @@ export function getGitHubToken(user: User): string | null {
   try {
     return decrypt(user.githubAccessToken);
   } catch (error) {
-    console.error('Error decrypting GitHub token:', error);
+    logger.error('Error decrypting GitHub token', error instanceof Error ? error : new Error(String(error)));
     return null;
   }
 }

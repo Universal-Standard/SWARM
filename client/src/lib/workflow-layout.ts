@@ -1,13 +1,24 @@
 import { Node, Edge } from '@xyflow/react';
+import ELK from 'elkjs';
+
+// Default node dimensions
+const DEFAULT_NODE_WIDTH = 280;
+const DEFAULT_NODE_HEIGHT = 120;
+
+// Create ELK instance
+const elk = new ELK();
 
 export type LayoutAlgorithm = 'hierarchical' | 'force' | 'grid';
+export type LayoutType = LayoutAlgorithm; // Alias for backward compatibility
 export type LayoutDirection = 'TB' | 'BT' | 'LR' | 'RL';
 
-interface LayoutOptions {
+export interface LayoutOptions {
   algorithm?: LayoutAlgorithm;
+  type?: LayoutType; // Support both names
   direction?: LayoutDirection;
   nodeSpacing?: number;
   rankSpacing?: number;
+  spacing?: number; // Additional spacing parameter
 }
 
 /**
@@ -415,15 +426,15 @@ export async function applyLayout(
 ): Promise<Node[]> {
   if (nodes.length === 0) return nodes;
 
-  const { algorithm, direction = 'TB', spacing = 100 } = options;
+  // Support both 'type' and 'algorithm' parameter names
+  const algorithm = options.algorithm || options.type;
+  const { direction = 'TB', spacing = 100 } = options;
 
   switch (algorithm) {
     case 'hierarchical':
       return applyHierarchicalLayout(nodes, edges, direction, spacing);
     case 'force':
       return applyForceLayout(nodes, edges, spacing);
-    case 'circular':
-      return applyCircularLayout(nodes, spacing);
     case 'grid':
       return applyGridLayout(nodes, spacing);
     default:
