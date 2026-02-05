@@ -91,11 +91,10 @@ export class CostTracker {
         agentId,
         provider,
         model,
-        inputTokens: tokenUsage.inputTokens,
-        outputTokens: tokenUsage.outputTokens,
+        promptTokens: tokenUsage.inputTokens,
+        completionTokens: tokenUsage.outputTokens,
         totalTokens: tokenUsage.totalTokens,
-        estimatedCost,
-        currency: pricing?.currency || "USD",
+        costUsd: estimatedCost,
       })
       .returning();
 
@@ -123,13 +122,13 @@ export class CostTracker {
       .where(
         and(
           eq(executions.userId, userId),
-          gte(executionCosts.calculatedAt, startDate),
-          lte(executionCosts.calculatedAt, endDate)
+          gte(executionCosts.timestamp, startDate),
+          lte(executionCosts.timestamp, endDate)
         )
       );
 
     // Calculate total cost
-    const totalCost = costs.reduce((sum, record) => sum + (record.cost.estimatedCost || 0), 0);
+    const totalCost = costs.reduce((sum, record) => sum + (record.cost.costUsd || 0), 0);
 
     // Breakdown by workflow
     const workflowCosts = new Map<string, { name: string; cost: number }>();
@@ -139,21 +138,21 @@ export class CostTracker {
         workflowCosts.set(wfId, { name: "Unknown", cost: 0 });
       }
       const wf = workflowCosts.get(wfId)!;
-      wf.cost += record.cost.estimatedCost || 0;
+      wf.cost += record.cost.costUsd || 0;
     });
 
     // Breakdown by provider
     const providerCosts = new Map<string, number>();
     costs.forEach(record => {
       const provider = record.cost.provider;
-      providerCosts.set(provider, (providerCosts.get(provider) || 0) + (record.cost.estimatedCost || 0));
+      providerCosts.set(provider, (providerCosts.get(provider) || 0) + (record.cost.costUsd || 0));
     });
 
     // Breakdown by model
     const modelCosts = new Map<string, number>();
     costs.forEach(record => {
       const model = record.cost.model;
-      modelCosts.set(model, (modelCosts.get(model) || 0) + (record.cost.estimatedCost || 0));
+      modelCosts.set(model, (modelCosts.get(model) || 0) + (record.cost.costUsd || 0));
     });
 
     // Breakdown by agent
@@ -164,7 +163,7 @@ export class CostTracker {
         agentCosts.set(agentId, { name: record.agent.name, cost: 0 });
       }
       const agent = agentCosts.get(agentId)!;
-      agent.cost += record.cost.estimatedCost || 0;
+      agent.cost += record.cost.costUsd || 0;
     });
 
     const period = `${startDate.toISOString().split('T')[0]} to ${endDate.toISOString().split('T')[0]}`;
@@ -220,14 +219,14 @@ export class CostTracker {
       .where(
         and(
           eq(executions.userId, userId),
-          gte(executionCosts.calculatedAt, startDate),
-          lte(executionCosts.calculatedAt, endDate)
+          gte(executionCosts.timestamp, startDate),
+          lte(executionCosts.timestamp, endDate)
         )
       );
 
     const totalTokens = costs.reduce((sum, r) => sum + (r.cost.totalTokens || 0), 0);
-    const inputTokens = costs.reduce((sum, r) => sum + (r.cost.inputTokens || 0), 0);
-    const outputTokens = costs.reduce((sum, r) => sum + (r.cost.outputTokens || 0), 0);
+    const inputTokens = costs.reduce((sum, r) => sum + (r.cost.promptTokens || 0), 0);
+    const outputTokens = costs.reduce((sum, r) => sum + (r.cost.completionTokens || 0), 0);
 
     const providerTokens = new Map<string, number>();
     costs.forEach(record => {
