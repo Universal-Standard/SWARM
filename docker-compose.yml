@@ -1,0 +1,63 @@
+version: '3.8'
+
+services:
+  # PostgreSQL Database
+  postgres:
+    image: postgres:16-alpine
+    container_name: swarm-postgres
+    restart: unless-stopped
+    environment:
+      POSTGRES_DB: swarm
+      POSTGRES_USER: swarm
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-swarm_dev_password}
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    ports:
+      - "5432:5432"
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U swarm"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  # SWARM Application
+  app:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: swarm-app
+    restart: unless-stopped
+    depends_on:
+      postgres:
+        condition: service_healthy
+    environment:
+      NODE_ENV: ${NODE_ENV:-production}
+      PORT: 5000
+      DATABASE_URL: postgresql://swarm:${POSTGRES_PASSWORD:-swarm_dev_password}@postgres:5432/swarm
+      SESSION_SECRET: ${SESSION_SECRET:-change-this-in-production}
+      ENCRYPTION_KEY: ${ENCRYPTION_KEY:-change-this-in-production}
+      ENCRYPTION_SALT: ${ENCRYPTION_SALT:-change-this-in-production}
+      OPENAI_API_KEY: ${OPENAI_API_KEY:-}
+      ANTHROPIC_API_KEY: ${ANTHROPIC_API_KEY:-}
+      GEMINI_API_KEY: ${GEMINI_API_KEY:-}
+      GITHUB_CLIENT_ID: ${GITHUB_CLIENT_ID:-}
+      GITHUB_CLIENT_SECRET: ${GITHUB_CLIENT_SECRET:-}
+      GITHUB_REDIRECT_URI: ${GITHUB_REDIRECT_URI:-http://localhost:5000/api/auth/github/callback}
+    ports:
+      - "5000:5000"
+    volumes:
+      - ./logs:/app/logs
+    healthcheck:
+      test: ["CMD", "wget", "--quiet", "--tries=1", "--spider", "http://localhost:5000/api/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 40s
+
+volumes:
+  postgres_data:
+    driver: local
+
+networks:
+  default:
+    name: swarm-network

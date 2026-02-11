@@ -1,0 +1,66 @@
+version: '3.8'
+
+# Development Docker Compose - for local development with hot reload
+services:
+  postgres:
+    image: postgres:16-alpine
+    container_name: swarm-postgres-dev
+    restart: unless-stopped
+    environment:
+      POSTGRES_DB: swarm_dev
+      POSTGRES_USER: swarm
+      POSTGRES_PASSWORD: swarm_dev_password
+    volumes:
+      - postgres_dev_data:/var/lib/postgresql/data
+    ports:
+      - "5432:5432"
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U swarm"]
+      interval: 5s
+      timeout: 3s
+      retries: 5
+
+  # Development server with hot reload
+  app:
+    build:
+      context: .
+      dockerfile: Dockerfile.dev
+    container_name: swarm-app-dev
+    restart: unless-stopped
+    depends_on:
+      postgres:
+        condition: service_healthy
+    environment:
+      NODE_ENV: development
+      PORT: 5000
+      DATABASE_URL: postgresql://swarm:swarm_dev_password@postgres:5432/swarm_dev
+      SESSION_SECRET: dev-session-secret-change-in-production
+      ENCRYPTION_KEY: dev-encryption-key-32-characters
+      ENCRYPTION_SALT: dev-encryption-salt-32-chars
+      OPENAI_API_KEY: ${OPENAI_API_KEY:-}
+      ANTHROPIC_API_KEY: ${ANTHROPIC_API_KEY:-}
+      GEMINI_API_KEY: ${GEMINI_API_KEY:-}
+      GITHUB_CLIENT_ID: ${GITHUB_CLIENT_ID:-}
+      GITHUB_CLIENT_SECRET: ${GITHUB_CLIENT_SECRET:-}
+      GITHUB_REDIRECT_URI: http://localhost:5000/api/auth/github/callback
+    ports:
+      - "5000:5000"
+    volumes:
+      # Mount source code for hot reload
+      - ./client:/app/client
+      - ./server:/app/server
+      - ./shared:/app/shared
+      - ./package.json:/app/package.json
+      - ./tsconfig.json:/app/tsconfig.json
+      - ./vite.config.ts:/app/vite.config.ts
+      # Prevent node_modules from being overwritten
+      - /app/node_modules
+    command: npm run dev
+
+volumes:
+  postgres_dev_data:
+    driver: local
+
+networks:
+  default:
+    name: swarm-dev-network

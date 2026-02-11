@@ -1,0 +1,55 @@
+# Dependencies
+node_modules
+npm-debug.log
+package-lock.json
+
+# Build outputs
+dist
+build
+*.tsbuildinfo
+
+# Development
+.env
+.env.*
+!.env.example
+
+# Git
+.git
+.gitignore
+.github
+
+# IDE
+.vscode
+.idea
+*.swp
+*.swo
+*~
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Logs
+logs
+*.log
+
+# Testing
+coverage
+.nyc_output
+
+# Temporary files
+tmp
+temp
+*.tmp
+
+# Documentation (not needed in container)
+docs
+*.md
+!README.md
+
+# Scripts (not needed in production)
+scripts
+
+# Replit specific
+.replit
+.replit.nix
