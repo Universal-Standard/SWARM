@@ -6,6 +6,7 @@ WORKDIR /app
 
 # Copy package files
 COPY package*.json ./
+COPY package-lock.json ./
 COPY client/package*.json ./client/
 
 # Install dependencies
@@ -29,6 +30,7 @@ WORKDIR /app
 
 # Copy package files
 COPY package*.json ./
+COPY package-lock.json ./
 
 # Install dependencies
 RUN npm ci --production=false
@@ -48,6 +50,7 @@ WORKDIR /app
 
 # Install production dependencies only
 COPY package*.json ./
+COPY package-lock.json ./
 RUN npm ci --production && npm cache clean --force
 
 # Copy built artifacts
