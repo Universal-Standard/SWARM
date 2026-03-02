@@ -132,7 +132,7 @@ jobs:
           cat autonomous-report.md
 
       - name: Upload Report
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v7
         with:
           name: autonomous-report
           path: autonomous-report.md
