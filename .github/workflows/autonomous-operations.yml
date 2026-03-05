@@ -27,12 +27,8 @@ jobs:
   autonomous-sync:
     runs-on: ubuntu-latest
     permissions:
-      contents: write
-      packages: write
-      pull-requests: write
       issues: write
-      repository-projects: write
-      id-token: write # Added, required if using OIDC features
+      contents: read
 
     steps:
       - name: Checkout
@@ -137,3 +133,5 @@ jobs:
           name: autonomous-report
           path: autonomous-report.md
           retention-days: 30
+
+# Permissions updated by GitHub Copilot Chat to resolve GitHub API 403 error.
