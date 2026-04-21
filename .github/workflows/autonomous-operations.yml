@@ -72,16 +72,17 @@ jobs:
 
           try:
               gh = Github(auth=Auth.Token(token))
-              user = gh.get_user()
-              print(f"Operating as: {user.login}")
-              print(f"Repositories found: {user.public_repos}")
+              repository_name = os.getenv("GITHUB_REPOSITORY")
+              if not repository_name:
+                  print("! ERROR: GITHUB_REPOSITORY not found in environment. Exiting.")
+                  sys.exit(1)
+              repo = gh.get_repo(repository_name)
+              print(f"Operating on repository: {repo.full_name}")
               # Auto-label open issues without labels
-              for repo in user.get_repos():
-                  print(f"Processing repo: {repo.full_name}")
-                  for issue in repo.get_issues(state='open'):
-                      if not issue.labels:
-                          issue.add_to_labels('needs-triage')
-                          print(f"Labeled issue #{issue.number} in {repo.full_name}")
+              for issue in repo.get_issues(state='open'):
+                  if not issue.labels:
+                      issue.add_to_labels('needs-triage')
+                      print(f"Labeled issue #{issue.number} in {repo.full_name}")
               print("Autonomous operations completed successfully.")
           except GithubException as ge:
               print(f"! Github API error: {ge.data}")
