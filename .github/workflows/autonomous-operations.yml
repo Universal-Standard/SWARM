@@ -74,7 +74,7 @@ jobs:
               gh = Github(auth=Auth.Token(token))
               repository_name = os.getenv("GITHUB_REPOSITORY")
               if not repository_name:
-                  print("! ERROR: GITHUB_REPOSITORY not found in environment. Exiting.")
+                  print("! ERROR: GITHUB_REPOSITORY environment variable not set. This workflow must run in GitHub Actions context.")
                   sys.exit(1)
               repo = gh.get_repo(repository_name)
               print(f"Operating on repository: {repo.full_name}")
