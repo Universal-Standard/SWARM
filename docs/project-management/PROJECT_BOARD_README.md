@@ -8,7 +8,7 @@ This comprehensive project board system provides:
 
 ✅ **5 Issue Templates** - YAML forms for bugs, features, tasks, upgrades, and fixes  
 ✅ **3 Automated Workflows** - Auto-triage, orchestrator assignment, PR automation  
-✅ **70+ Labels** - Comprehensive categorization system  
+✅ **Portfolio-aware labels** - System, area, lifecycle, integration, and agent state  
 ✅ **PR Template** - Detailed pull request checklist  
 ✅ **Project Board Config** - Complete board setup guide with **GitHub CLI automation**  
 ✅ **Wiki Structure** - Ready-to-use documentation templates  
@@ -70,7 +70,7 @@ Create a test issue using one of the templates and verify it auto-labels and add
 ### For Developers
 - **Self-Assignment** - Pick tasks and auto-assign yourself
 - **GitHub Copilot** - AI suggestions following project guidelines
-- **PR Automation** - Auto-labeling, size warnings, and status tracking
+- **PR Automation** - Portfolio classification, autonomous remediation, review loops, and lifecycle tracking
 - **Clear Workflow** - From issue → branch → PR → review → merge → deploy
 
 ### For Contributors
@@ -146,10 +146,9 @@ Create a test issue using one of the templates and verify it auto-labels and add
 ### 3. PR Automation
 **Triggers:** PR opened, reviewed, merged  
 **Actions:**
-- Labels by content and size
+- Labels by system, area, content, and lifecycle
 - Links to issues
 - Updates issue status
-- Warns on large PRs
 - Tracks through lifecycle
 
 ## 🏷️ Label System
@@ -169,10 +168,6 @@ self-assigned | auto-assign | orchestrator-assigned | awaiting-assignment | need
 ### Groups (7 labels)
 group-a-core | group-b-auth | group-c-monitoring | group-d-knowledge | group-e-ux | group-f-advanced | group-g-future
 
-### PR Size (5 labels)
-size/xs | size/s | size/m | size/l | size/xl
-
-**Total:** 70+ labels for comprehensive management
 
 ## 📊 Project Board Structure
 
