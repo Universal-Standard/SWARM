@@ -930,7 +930,6 @@ Ensure these labels exist and sync to project:
 **Component**: `workflow-builder`, `execution-engine`, `github-integration`, etc.
 **Group**: `group-a-core`, `group-b-auth`, `group-c-monitoring`, etc.
 **Assignment**: `self-assigned`, `auto-assign`, `orchestrator-assigned`, `help-wanted`
-**Size**: `size/xs`, `size/s`, `size/m`, `size/l`, `size/xl`
 
 ## Team Configuration
 
