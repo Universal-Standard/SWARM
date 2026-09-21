@@ -125,43 +125,6 @@ jobs:
               body: '✅ **PR Ready for Review**\n\nThis PR is now ready for review. Reviewers will be automatically notified.\n\n**Review Checklist:**\n- [ ] Code quality and style\n- [ ] Test coverage\n- [ ] Documentation\n- [ ] Security considerations\n- [ ] Performance impact'
             });
 
-  approved-checks:
-    runs-on: ubuntu-latest
-    if: github.event.review.state == 'approved'
-    steps:
-      - name: Check if ready to merge
-        uses: actions/github-script@3a2844b7e9c422d3c10d287c895573f7108da1b3
-        with:
-          script: |
-            const pr = context.payload.pull_request;
-            
-            // Check if all checks passed
-            const { data: checks } = await github.rest.checks.listForRef({
-              owner: context.repo.owner,
-              repo: context.repo.repo,
-              ref: pr.head.sha
-            });
-            
-            const allPassed = checks.check_runs.every(check => 
-              check.status === 'completed' && check.conclusion === 'success'
-            );
-            
-            if (allPassed && pr.mergeable_state === 'clean') {
-              await github.rest.issues.addLabels({
-                owner: context.repo.owner,
-                repo: context.repo.repo,
-                issue_number: pr.number,
-                labels: ['ready-to-merge']
-              });
-              
-              await github.rest.issues.createComment({
-                owner: context.repo.owner,
-                repo: context.repo.repo,
-                issue_number: pr.number,
-                body: '✅ **Ready to Merge**\n\nThis PR has been approved and all checks have passed. It can be merged when ready.'
-              });
-            }
-
   post-merge:
     runs-on: ubuntu-latest
     if: github.event.pull_request.merged == true
