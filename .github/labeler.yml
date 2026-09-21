@@ -13,6 +13,7 @@ area/agents:
           - "**/orchestration/**"
           - "**/task-graph/**"
           - "**/planner/**"
+          - "server/ai/**"
 
 area/mcp:
   - changed-files:
@@ -66,6 +67,7 @@ area/documentation:
       - any-glob-to-any-file:
           - "docs/**"
           - "**/README.md"
+          - "**/readme.md"
           - "**/CONTRIBUTING.md"
           - "**/CHANGELOG.md"
 
