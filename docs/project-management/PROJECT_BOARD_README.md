@@ -153,21 +153,25 @@ Create a test issue using one of the templates and verify it auto-labels and add
 
 ## 🏷️ Label System
 
-### Priority (4 labels)
-🔴 critical | 🟡 high | 🟢 medium | ⚪ low
+The Universal Portfolio automation now uses a shared cross-repository taxonomy. Existing SWARM labels remain available for compatibility where needed, but new automation should prefer the portfolio labels below.
 
-### Type (7 labels)
-bug | enhancement | feature-request | task | fix | planned-upgrade | documentation
+### System
+`system/swarm` is the primary SWARM identity. Explicit references to ATLANTIS, HITMAN, Universal Standards, CAROMAR, or the Universal Standard MCP Server add the corresponding `system/*` label plus `scope/cross-system` and `integration/required`.
 
-### Status (6 labels)
-needs-triage | in-progress | in-review | blocked | ready-to-merge | deployed
+### Area
+`area/architecture` | `area/agents` | `area/mcp` | `area/standards` | `area/security` | `area/ci-cd` | `area/testing` | `area/documentation` | `area/data` | `area/api`
 
-### Assignment (8 labels)
-self-assigned | auto-assign | orchestrator-assigned | awaiting-assignment | needs-team-assignment | needs-manual-assignment | help-wanted | good-first-issue
+### Lifecycle
+`status/triage` | `status/draft` | `status/implementation` | `status/needs-review` | `status/remediation` | `status/verified` | `status/merge-ready` | `status/awaiting-final-approval` | `status/agent-blocked` | `status/merged` | `status/closed`
 
-### Groups (7 labels)
-group-a-core | group-b-auth | group-c-monitoring | group-d-knowledge | group-e-ux | group-f-advanced | group-g-future
+### Agent and review
+`agent/assigned` | `agent/remediation` | `agent/manual` | `agent/pending-configuration` | `review/required` | `finding/actionable` | `finding/resolved`
 
+### Manual safety gates
+`no-agent` | `security/manual-review` | `governance/manual-review`
+
+### Legacy compatibility
+Priority, issue-type, component, assignment, and historical board labels can remain where existing SWARM workflows or reports still depend on them. PR size labels are retired and must not be recreated.
 
 ## 📊 Project Board Structure
 
