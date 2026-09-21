@@ -120,11 +120,6 @@ echo ""
 echo "Creating PR labels..."
 gh label create "ready-to-merge" -d "PR approved and ready to merge" -c "0e8a16" -f || echo "  ✓ ready-to-merge already exists"
 gh label create "breaking-change" -d "Breaking change" -c "d73a4a" -f || echo "  ✓ breaking-change already exists"
-gh label create "size/xs" -d "Extra small PR" -c "c5def5" -f || echo "  ✓ size/xs already exists"
-gh label create "size/s" -d "Small PR" -c "c2e0c6" -f || echo "  ✓ size/s already exists"
-gh label create "size/m" -d "Medium PR" -c "ffeb3b" -f || echo "  ✓ size/m already exists"
-gh label create "size/l" -d "Large PR" -c "ff9800" -f || echo "  ✓ size/l already exists"
-gh label create "size/xl" -d "Extra large PR" -c "d73a4a" -f || echo "  ✓ size/xl already exists"
 
 # Triage Labels
 echo ""

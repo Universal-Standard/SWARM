@@ -8,7 +8,7 @@ This comprehensive project board system provides:
 
 ✅ **5 Issue Templates** - YAML forms for bugs, features, tasks, upgrades, and fixes  
 ✅ **3 Automated Workflows** - Auto-triage, orchestrator assignment, PR automation  
-✅ **70+ Labels** - Comprehensive categorization system  
+✅ **Portfolio-aware labels** - System, area, lifecycle, integration, and agent state  
 ✅ **PR Template** - Detailed pull request checklist  
 ✅ **Project Board Config** - Complete board setup guide with **GitHub CLI automation**  
 ✅ **Wiki Structure** - Ready-to-use documentation templates  
@@ -70,7 +70,7 @@ Create a test issue using one of the templates and verify it auto-labels and add
 ### For Developers
 - **Self-Assignment** - Pick tasks and auto-assign yourself
 - **GitHub Copilot** - AI suggestions following project guidelines
-- **PR Automation** - Auto-labeling, size warnings, and status tracking
+- **PR Automation** - Portfolio classification, autonomous remediation, review loops, and lifecycle tracking
 - **Clear Workflow** - From issue → branch → PR → review → merge → deploy
 
 ### For Contributors
@@ -146,33 +146,32 @@ Create a test issue using one of the templates and verify it auto-labels and add
 ### 3. PR Automation
 **Triggers:** PR opened, reviewed, merged  
 **Actions:**
-- Labels by content and size
+- Labels by system, area, content, and lifecycle
 - Links to issues
 - Updates issue status
-- Warns on large PRs
 - Tracks through lifecycle
 
 ## 🏷️ Label System
 
-### Priority (4 labels)
-🔴 critical | 🟡 high | 🟢 medium | ⚪ low
+The Universal Portfolio automation now uses a shared cross-repository taxonomy. Existing SWARM labels remain available for compatibility where needed, but new automation should prefer the portfolio labels below.
 
-### Type (7 labels)
-bug | enhancement | feature-request | task | fix | planned-upgrade | documentation
+### System
+`system/swarm` is the primary SWARM identity. Explicit references to ATLANTIS, HITMAN, Universal Standards, CAROMAR, or the Universal Standard MCP Server add the corresponding `system/*` label plus `scope/cross-system` and `integration/required`.
 
-### Status (6 labels)
-needs-triage | in-progress | in-review | blocked | ready-to-merge | deployed
+### Area
+`area/architecture` | `area/agents` | `area/mcp` | `area/standards` | `area/security` | `area/ci-cd` | `area/testing` | `area/documentation` | `area/data` | `area/api`
 
-### Assignment (8 labels)
-self-assigned | auto-assign | orchestrator-assigned | awaiting-assignment | needs-team-assignment | needs-manual-assignment | help-wanted | good-first-issue
+### Lifecycle
+`status/triage` | `status/draft` | `status/implementation` | `status/needs-review` | `status/remediation` | `status/verified` | `status/merge-ready` | `status/awaiting-final-approval` | `status/agent-blocked` | `status/merged` | `status/closed`
 
-### Groups (7 labels)
-group-a-core | group-b-auth | group-c-monitoring | group-d-knowledge | group-e-ux | group-f-advanced | group-g-future
+### Agent and review
+`agent/assigned` | `agent/remediation` | `agent/manual` | `agent/pending-configuration` | `review/required` | `finding/actionable` | `finding/resolved`
 
-### PR Size (5 labels)
-size/xs | size/s | size/m | size/l | size/xl
+### Manual safety gates
+`no-agent` | `security/manual-review` | `governance/manual-review`
 
-**Total:** 70+ labels for comprehensive management
+### Legacy compatibility
+Priority, issue-type, component, assignment, and historical board labels can remain where existing SWARM workflows or reports still depend on them. PR size labels are retired and must not be recreated.
 
 ## 📊 Project Board Structure
 
