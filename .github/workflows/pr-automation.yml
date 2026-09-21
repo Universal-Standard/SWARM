@@ -17,7 +17,7 @@ jobs:
     if: github.event.action == 'opened' || github.event.action == 'edited'
     steps:
       - name: Label PR based on content
-        uses: actions/github-script@v8
+        uses: actions/github-script@3a2844b7e9c422d3c10d287c895573f7108da1b3
         with:
           script: |
             const pr = context.payload.pull_request;
@@ -47,20 +47,6 @@ jobs:
               labels.push('ux', 'ui');
             }
             
-            // Size estimation based on files changed
-            const files = pr.changed_files;
-            if (files <= 5) {
-              labels.push('size/xs');
-            } else if (files <= 15) {
-              labels.push('size/s');
-            } else if (files <= 30) {
-              labels.push('size/m');
-            } else if (files <= 60) {
-              labels.push('size/l');
-            } else {
-              labels.push('size/xl');
-            }
-            
             // Apply labels
             if (labels.length > 0) {
               await github.rest.issues.addLabels({
@@ -72,7 +58,7 @@ jobs:
             }
 
       - name: Link to issues
-        uses: actions/github-script@v8
+        uses: actions/github-script@3a2844b7e9c422d3c10d287c895573f7108da1b3
         with:
           script: |
             const pr = context.payload.pull_request;
@@ -113,31 +99,12 @@ jobs:
               }
             }
 
-  pr-size-warning:
-    runs-on: ubuntu-latest
-    if: github.event.action == 'opened' || github.event.action == 'synchronize'
-    steps:
-      - name: Warn on large PRs
-        uses: actions/github-script@v8
-        with:
-          script: |
-            const pr = context.payload.pull_request;
-            
-            if (pr.changed_files > 60 || pr.additions + pr.deletions > 1000) {
-              await github.rest.issues.createComment({
-                owner: context.repo.owner,
-                repo: context.repo.repo,
-                issue_number: pr.number,
-                body: '⚠️ **Large Pull Request Detected**\n\nThis PR is quite large. Consider:\n- Breaking it into smaller PRs\n- Adding more detailed description\n- Highlighting key changes for reviewers\n\nLarge PRs are harder to review and more likely to introduce bugs.'
-              });
-            }
-
   ready-for-review:
     runs-on: ubuntu-latest
     if: github.event.action == 'ready_for_review'
     steps:
       - name: Request reviews
-        uses: actions/github-script@v8
+        uses: actions/github-script@3a2844b7e9c422d3c10d287c895573f7108da1b3
         with:
           script: |
             const pr = context.payload.pull_request;
@@ -163,7 +130,7 @@ jobs:
     if: github.event.review.state == 'approved'
     steps:
       - name: Check if ready to merge
-        uses: actions/github-script@v8
+        uses: actions/github-script@3a2844b7e9c422d3c10d287c895573f7108da1b3
         with:
           script: |
             const pr = context.payload.pull_request;
@@ -200,7 +167,7 @@ jobs:
     if: github.event.pull_request.merged == true
     steps:
       - name: Update linked issues
-        uses: actions/github-script@v8
+        uses: actions/github-script@3a2844b7e9c422d3c10d287c895573f7108da1b3
         with:
           script: |
             const pr = context.payload.pull_request;
